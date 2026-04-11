@@ -1,6 +1,6 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-10 Session 2
+> Last updated: 2026-04-11 Session 4
 > Overall progress: 19%
 
 ## Phase Summary
@@ -65,3 +65,26 @@
 - scripts/seed.ts 작성 (역할3, 교수1, 학생2, 코스1, 섹션3, 활동5, 수강등록2)
 - tsx dev dependency 설치
 - Phase 2 완료 → Phase 3 IN_PROGRESS 전환
+
+### 2026-04-11 Session 3
+- Vercel CLI devDependency 설치 (npm i -D vercel)
+- Vercel 프로젝트 생성 및 링크: sooworldfire-3143s-projects/mini-moodle
+- Neon Postgres 마켓플레이스 통합 프로비저닝 (neon-claret-jacket)
+- vercel integration add 과정에서 .env.local 자동 생성 (POSTGRES_URL 등 17개 키)
+- scripts/apply-schema.ts 작성 — schema.sql을 세미콜론 분리해 순차 실행
+- 스키마 적용 완료: 13 tables + 10 indexes + 1 ALTER (24 구문 전부 성공)
+- seed.ts 실행 완료 → 교수1/학생2/코스1/섹션3/활동5/수강등록2 DB 반영
+- .env.local에 NEXTAUTH_SECRET 자동 생성(crypto.randomBytes 32B base64), NEXTAUTH_URL 추가
+- Phase 3 진입 준비 완료 (다음: NextAuth.js Credentials Provider 설정)
+
+### 2026-04-11 Session 4 — DB 백엔드 마이그레이션 (Vercel-managed → Direct Neon)
+- 사유: 학습 가치, 락인 회피, Neon 브랜칭 직접 활용 (자세한 내용은 project_history/CHANGELOG.md)
+- 사용자가 Neon 직접 가입 후 새 organization에서 mini-moodle 프로젝트 생성 (ap-southeast-2 Sydney, Postgres 17, Neon Auth 비활성화)
+- scripts/verify-counts.ts 신규 작성 — baseline/cutover 검증용 행 수 카운터
+- Milestone B (병렬 셋업): 새 Neon DB에 schema.sql + seed.ts 적용, baseline과 행 수 일치 확인
+- Milestone C (cutover): .env.local 정리 (Vercel 자동주입 17키 → POSTGRES_URL 1키), apply-schema 재실행으로 "already exists" 검증, seed 재실행, 행 수 재검증
+- Milestone D: 사용자가 Vercel 대시보드에서 기존 neon-claret-jacket 리소스 수동 삭제 (organization 권한 문제 해결 과정에서 함께 처리됨)
+- Vercel mini-moodle 프로젝트 자체는 유지 (향후 배포 옵션 보존)
+- 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
+- @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
+- project_history/CHANGELOG.md에 마이그레이션 항목 추가

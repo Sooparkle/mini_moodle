@@ -92,3 +92,4 @@ If any task status changed, a file was created, or a feature was implemented in 
 - 단일 쿼리: `import { sql } from '@vercel/postgres'` 직접 사용 (래퍼 불필요)
 - 트랜잭션: `import { withTransaction } from '@/lib/db'` 사용
 - `@vercel/postgres`의 `sql`을 별도 이름으로 re-export하지 않음 — 공식 API명 그대로 사용
+- Postgres 백엔드: 직접 가입한 Neon 계정 소유 (Vercel 마켓플레이스 통합 미사용). `@vercel/postgres` 패키지는 내부적으로 `@neondatabase/serverless`를 쓰므로 어느 Neon connection string과도 호환됨
