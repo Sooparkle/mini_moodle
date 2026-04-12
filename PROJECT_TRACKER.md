@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-11 Session 4
-> Overall progress: 19%
+> Last updated: 2026-04-12 Session 5
+> Overall progress: 37%
 
 ## Phase Summary
 
@@ -9,8 +9,8 @@
 |---|-------|--------|----------|--------|-------|
 | 1 | Analysis | DONE | 100% | 0.5d | 13테이블 확장 스코프 확정 |
 | 2 | Design + Setup | DONE | 100% | 1d | 모든 태스크 완료 |
-| 3 | Auth + Dashboard | IN_PROGRESS | 0% | 1.5d | |
-| 4 | Course CRUD + Sections | NOT_STARTED | 0% | 1.5d | |
+| 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
+| 4 | Course CRUD + Sections | IN_PROGRESS | 0% | 1.5d | |
 | 5 | Activity Modules (Quiz + Assignment) | NOT_STARTED | 0% | 2d | |
 | 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
@@ -22,7 +22,7 @@
 
 ---
 
-## Current Phase: Phase 2 — Design + Setup
+## Phase 2 — Design + Setup (DONE)
 
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
@@ -32,19 +32,32 @@
 | DB connection utility (src/lib/db.ts) | DONE | 10% | query (단일) + withTransaction (트랜잭션) |
 | Env setup (.env.local template) | DONE | 10% | .env.local.example + .gitignore 예외 |
 
-**Phase 2 progress: 100%** (40% + 20% + 20% + 10% + 10%)
+**Phase 2 progress: 100%**
 
 ---
 
-## Upcoming: Phase 3 — Auth + Dashboard
+## Phase 3 — Auth + Dashboard (DONE)
 
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
-| NextAuth.js config | NOT_STARTED | 20% | Credentials Provider |
-| Login/Register pages | NOT_STARTED | 25% | |
-| Auth middleware | NOT_STARTED | 15% | |
-| Dashboard layout | NOT_STARTED | 20% | |
-| Role-based routing | NOT_STARTED | 20% | admin / teacher / student 분기 |
+| NextAuth.js config | DONE | 20% | Credentials Provider, JWT에 id+role 주입 |
+| Login/Register pages | DONE | 25% | /login, /register + Server Action |
+| Auth proxy | DONE | 15% | proxy.ts (Next.js 16), 미인증→/login 리다이렉트 |
+| Dashboard layout | DONE | 20% | 공통 nav (이름+역할 배지+로그아웃) |
+| Role-based routing | DONE | 20% | admin/teacher/student 분기 대시보드 |
+
+**Phase 3 progress: 100%**
+
+---
+
+## Current Phase: Phase 4 — Course CRUD + Sections
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| Course creation (teacher) | NOT_STARTED | 25% | /courses/new, Server Action |
+| Course detail page | NOT_STARTED | 25% | /courses/[id], teacher/student 뷰 분기 |
+| Section management | NOT_STARTED | 25% | 섹션 추가/수정, sort_order 변경 |
+| Course list page | NOT_STARTED | 25% | /courses, 역할별 필터링 |
 
 ---
 
@@ -88,3 +101,22 @@
 - 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
 - @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
 - project_history/CHANGELOG.md에 마이그레이션 항목 추가
+
+### 2026-04-12 Session 5 — Phase 3 완료 (Auth + Dashboard)
+- src/lib/auth.ts: NextAuth Credentials Provider 설정 (JWT에 user.id, user.role 주입)
+- src/types/next-auth.d.ts: Session/JWT 타입 확장
+- src/app/api/auth/[...nextauth]/route.ts: NextAuth Route Handler
+- src/app/login/page.tsx + login.module.css: 로그인 페이지 (signIn + 에러 처리)
+- src/app/register/page.tsx: 회원가입 페이지 (Server Action으로 DB 삽입, student 역할 자동 부여)
+- src/app/actions/auth.ts: register Server Action (validation + bcrypt hash)
+- src/proxy.ts: Next.js 16 proxy (미인증 → /login 리다이렉트, PUBLIC_PATHS 제외)
+- src/app/providers.tsx: SessionProvider 래퍼
+- src/app/layout.tsx: Providers 적용, 메타데이터 업데이트
+- src/app/dashboard/layout.tsx: getServerSession 기반 보호 레이아웃
+- src/app/dashboard/nav.tsx: 네비게이션 (이름 + 역할 배지 + 로그아웃)
+- src/app/dashboard/page.tsx: role 분기 (admin: 시스템 통계, teacher: 내 코스, student: 수강 코스)
+- src/app/dashboard/dashboard.module.css: 대시보드 스타일
+- src/app/page.tsx: / → /dashboard 리다이렉트
+- 테스트: 교수(prof@moodlelite.com), 학생(student1@moodlelite.com) 로그인+세션+대시보드 검증
+- Phase 3 완료 (100%) → Phase 4 IN_PROGRESS 전환
+- Overall progress: 19% → 37%

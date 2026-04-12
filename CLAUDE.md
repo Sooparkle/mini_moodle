@@ -1,5 +1,4 @@
 @AGENTS.md
-@PROJECT_TRACKER.md
 
 # MoodleLite Project Instructions
 
@@ -16,9 +15,10 @@
 These rules apply to EVERY session. They are not optional.
 
 ### Rule 1: Read Context First
-PROJECT_TRACKER.md는 `@` 참조로 자동 로드됨. 추가로:
+세션 시작 시 **Read tool로 `PROJECT_TRACKER.md`를 읽을 것** (Phase Summary + Current Phase 태스크 목록 확인).
 - **새 Phase 시작 시**: `project_history/PLAN.md`를 읽어 해당 Phase의 상세 요구사항과 기술 결정 맥락을 파악할 것
 - **기술 결정이 필요할 때**: `project_history/PLAN.md`의 "반대 논리 및 한계" 섹션을 참고할 것
+- **CSS/TSX 작업 시**: `/design` skill이 자동 로드됨 (디자인 가이드라인)
 
 ### Rule 2: Update Tracker After Every Meaningful Change
 After completing any of these, update PROJECT_TRACKER.md immediately:
