@@ -34,8 +34,9 @@ yarn-error.log*
 .env*
 !.env.local.example
 
-# claude code
-.claude/
+# claude code — ignore all except skills (project-shared)
+.claude/*
+!.claude/skills/
 
 # vercel
 .vercel
