@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-13 Session 8
-> Overall progress: 90%
+> Last updated: 2026-04-13 Session 9
+> Overall progress: 94%
 
 ## Phase Summary
 
@@ -12,7 +12,7 @@
 | 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
 | 4 | Course CRUD + Sections | DONE | 100% | 1.5d | 모든 태스크 완료 |
 | 5 | Activity Modules (Quiz + Assignment) | DONE | 100% | 2d | 모든 태스크 완료 |
-| 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
+| 6 | Enrollment + Grades | DONE | 100% | 1d | 모든 태스크 완료 |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
 
 ## Progress Formula
@@ -74,6 +74,20 @@
 
 ---
 
+## Phase 6 — Enrollment + Grades (DONE)
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 6a: enrollment 서버 액션 | DONE | 15% | enrollInCourse (ON CONFLICT 멱등, is_published 검증) |
+| 6b: EnrollButton 클라이언트 컴포넌트 | DONE | 10% | useTransition + router.refresh 패턴 |
+| 6c: 코스 목록 + 상세 등록 UI | DONE | 20% | 목록에 등록 버튼, 상세에 배너 + 교수 성적표 링크 |
+| 6d: 교수용 성적표 페이지 | DONE | 30% | CROSS JOIN 매트릭스, 통계 요약 + 항목별 평균 + 학생별 성적 |
+| 6e: 학생 대시보드 성적 집계 | DONE | 25% | LATERAL JOIN, 코스별 % + 총 평균 카드 |
+
+**Phase 6 progress: 100%**
+
+---
+
 ## Session Log
 
 ### 2026-04-10 Session 1
@@ -114,6 +128,18 @@
 - 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
 - @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
 - project_history/CHANGELOG.md에 마이그레이션 항목 추가
+
+### 2026-04-13 Session 9 — Phase 6 완료 (Enrollment + Grades)
+- src/app/actions/enrollment.ts: enrollInCourse 서버액션 (ON CONFLICT DO NOTHING 멱등, is_published 체크)
+- src/app/(authenticated)/courses/[id]/EnrollButton.tsx: useTransition + router.refresh 클라이언트 컴포넌트
+- courses/page.tsx 수정: 수강 가능 코스에 EnrollButton 추가 (카드 Link 분리)
+- courses/[id]/page.tsx 수정: 비등록 학생용 등록 배너 + 교수용 "성적표 보기" 링크
+- courses/[id]/grades/ 신규: 교수용 성적표 (CROSS JOIN 학생×항목 매트릭스, 통계 + 항목별 평균 + 학생별 성적)
+- dashboard/page.tsx 수정: LATERAL JOIN으로 코스별 성적 집계, 총 평균 카드 추가
+- CSS 확장: courses.module.css, course-detail.module.css, dashboard.module.css, grades.module.css (신규)
+- TypeScript 타입 체크 통과
+- Phase 6 완료 (100%) → Phase 7 대기
+- Overall progress: 90% → 94%
 
 ### 2026-04-13 Session 8 — Phase 5 완료 (Activity Modules: Quiz + Assignment)
 - assignment_submissions 14번째 테이블 추가 (마이그레이션 + schema.sql 업데이트)

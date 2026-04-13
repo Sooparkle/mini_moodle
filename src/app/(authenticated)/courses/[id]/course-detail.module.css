@@ -545,6 +545,47 @@
   color: #16a34a;
 }
 
+/* Enroll banner */
+.enrollBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.enrollBanner p {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  margin: 0;
+}
+
+/* Course actions (teacher) */
+.courseActions {
+  margin-bottom: var(--space-6);
+}
+
+.gradesLink {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.gradesLink:hover {
+  border-color: var(--gray-400);
+  color: var(--gray-900);
+}
+
 /* Empty state */
 .emptyState {
   text-align: center;

@@ -102,6 +102,30 @@
   background: var(--accent-hover);
 }
 
+/* Course title link (for cards without full card link) */
+.courseLink {
+  color: var(--gray-900);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.courseLink:hover {
+  color: var(--accent);
+}
+
+.cardActions {
+  margin-top: var(--space-3);
+}
+
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+}
+
 .emptyState {
   text-align: center;
   padding: var(--space-12);

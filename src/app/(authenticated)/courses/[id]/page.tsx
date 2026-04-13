@@ -4,6 +4,7 @@ import { sql } from '@vercel/postgres';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SectionManager } from './SectionManager';
+import { EnrollButton } from './EnrollButton';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -173,12 +174,26 @@ export default async function CourseDetailPage({
         </div>
       </header>
 
+      {isStudent && !isEnrolled && course.is_published && (
+        <section className={styles.enrollBanner}>
+          <p>이 코스의 활동에 참여하려면 수강 등록이 필요합니다.</p>
+          <EnrollButton courseId={courseId} />
+        </section>
+      )}
+
       {canEdit ? (
-        <SectionManager
-          courseId={courseId}
-          initialSections={sections}
-          activitiesBySection={activitiesBySection}
-        />
+        <>
+          <div className={styles.courseActions}>
+            <Link href={`/courses/${courseId}/grades`} className={styles.gradesLink}>
+              성적표 보기 &rarr;
+            </Link>
+          </div>
+          <SectionManager
+            courseId={courseId}
+            initialSections={sections}
+            activitiesBySection={activitiesBySection}
+          />
+        </>
       ) : (
         <ReadOnlySections
           sections={sections}

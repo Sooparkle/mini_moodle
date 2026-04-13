@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { sql } from '@vercel/postgres';
 import Link from 'next/link';
+import { EnrollButton } from './[id]/EnrollButton';
 import styles from './courses.module.css';
 
 export default async function CoursesPage() {
@@ -142,15 +143,20 @@ async function StudentCourseList({ userId }: { userId: number }) {
         ) : (
           <section className={styles.cardGrid}>
             {available.map((c) => (
-              <Link key={c.id} href={`/courses/${c.id}`} className={styles.cardLink}>
-                <article className={styles.card}>
-                  <h3>{c.title}</h3>
-                  <p className={styles.shortName}>{c.short_name}</p>
-                  <p className={styles.meta}>
-                    {c.teacher_name} · 수강생 {c.student_count}명
-                  </p>
-                </article>
-              </Link>
+              <article key={c.id} className={styles.card}>
+                <h3>
+                  <Link href={`/courses/${c.id}`} className={styles.courseLink}>
+                    {c.title}
+                  </Link>
+                </h3>
+                <p className={styles.shortName}>{c.short_name}</p>
+                <p className={styles.meta}>
+                  {c.teacher_name} · 수강생 {c.student_count}명
+                </p>
+                <div className={styles.cardActions}>
+                  <EnrollButton courseId={c.id} />
+                </div>
+              </article>
             ))}
           </section>
         )}
