@@ -2,12 +2,19 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   createSection,
   updateSection,
   deleteSection,
   reorderSection,
 } from '@/app/actions/section';
+import {
+  createActivity,
+  updateActivity,
+  deleteActivity,
+  reorderActivity,
+} from '@/app/actions/activity';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -257,7 +264,8 @@ export function SectionManager({
                   {section.description && (
                     <p className={styles.sectionDesc}>{section.description}</p>
                   )}
-                  <ActivityList
+                  <ActivityManager
+                    sectionId={section.id}
                     activities={activitiesBySection[section.id] || []}
                   />
                 </>
@@ -269,6 +277,244 @@ export function SectionManager({
     </div>
   );
 }
+
+// --- Activity Manager (teacher) ---
+
+function ActivityManager({
+  sectionId,
+  activities,
+}: {
+  sectionId: number;
+  activities: Activity[];
+}) {
+  const router = useRouter();
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [error, setError] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  async function handleCreate(formData: FormData) {
+    formData.set('section_id', String(sectionId));
+    setError('');
+
+    startTransition(async () => {
+      const result = await createActivity(formData);
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        setShowAddForm(false);
+        router.refresh();
+      }
+    });
+  }
+
+  async function handleUpdate(formData: FormData) {
+    setError('');
+
+    startTransition(async () => {
+      const result = await updateActivity(formData);
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        setEditingId(null);
+        router.refresh();
+      }
+    });
+  }
+
+  async function handleDelete(activityId: number) {
+    if (!confirm('이 활동과 관련 데이터가 모두 삭제됩니다. 계속하시겠습니까?')) return;
+    setError('');
+
+    const fd = new FormData();
+    fd.set('activity_id', String(activityId));
+
+    startTransition(async () => {
+      const result = await deleteActivity(fd);
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
+  async function handleReorder(activityId: number, direction: 'up' | 'down') {
+    setError('');
+
+    const fd = new FormData();
+    fd.set('activity_id', String(activityId));
+    fd.set('direction', direction);
+
+    startTransition(async () => {
+      const result = await reorderActivity(fd);
+      if (!result.success) {
+        setError(result.error);
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <div>
+      {error && (
+        <p className={styles.error} role="alert" style={{ marginTop: 'var(--space-2)' }}>
+          {error}
+        </p>
+      )}
+
+      {activities.length === 0 && !showAddForm ? (
+        <p className={styles.noActivities}>등록된 활동이 없습니다.</p>
+      ) : (
+        <ul className={styles.activityList}>
+          {activities.map((a, idx) =>
+            editingId === a.id ? (
+              <li key={a.id} className={styles.activityItem} style={{ display: 'block' }}>
+                <EditActivityForm
+                  activity={a}
+                  onSubmit={handleUpdate}
+                  onCancel={() => setEditingId(null)}
+                  isPending={isPending}
+                />
+              </li>
+            ) : (
+              <li key={a.id} className={styles.activityItem}>
+                <span className={styles.typeBadge} data-type={a.type}>
+                  {a.type === 'quiz' ? '퀴즈' : '과제'}
+                </span>
+                <Link href={`/activities/${a.id}`} className={styles.activityLink}>
+                  {a.title}
+                </Link>
+                {!a.is_visible && (
+                  <span className={styles.hiddenBadge}>숨김</span>
+                )}
+                {a.due_date && (
+                  <span className={styles.dueDate}>
+                    마감: {new Date(a.due_date).toLocaleDateString('ko-KR')}
+                  </span>
+                )}
+                <div className={styles.activityActions}>
+                  <button
+                    type="button"
+                    className={styles.activityArrowBtn}
+                    disabled={idx === 0 || isPending}
+                    onClick={() => handleReorder(a.id, 'up')}
+                    aria-label="위로 이동"
+                  >
+                    &#9650;
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.activityArrowBtn}
+                    disabled={idx === activities.length - 1 || isPending}
+                    onClick={() => handleReorder(a.id, 'down')}
+                    aria-label="아래로 이동"
+                  >
+                    &#9660;
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.activityEditBtn}
+                    onClick={() => {
+                      setEditingId(a.id);
+                      setShowAddForm(false);
+                    }}
+                  >
+                    편집
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.activityDeleteBtn}
+                    onClick={() => handleDelete(a.id)}
+                    disabled={isPending}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </li>
+            ),
+          )}
+        </ul>
+      )}
+
+      {showAddForm ? (
+        <form action={handleCreate} className={styles.addActivityForm}>
+          <label className={styles.label} htmlFor={`act-type-${sectionId}`}>
+            활동 유형
+          </label>
+          <select
+            id={`act-type-${sectionId}`}
+            name="type"
+            className={styles.select}
+            required
+          >
+            <option value="quiz">퀴즈</option>
+            <option value="assignment">과제</option>
+          </select>
+
+          <label className={styles.label} htmlFor={`act-title-${sectionId}`}>
+            제목
+          </label>
+          <input
+            id={`act-title-${sectionId}`}
+            name="title"
+            className={styles.input}
+            required
+            autoComplete="off"
+            placeholder="예: 중간고사 퀴즈"
+          />
+
+          <label className={styles.label} htmlFor={`act-desc-${sectionId}`}>
+            설명 (선택)
+          </label>
+          <textarea
+            id={`act-desc-${sectionId}`}
+            name="description"
+            className={styles.textarea}
+            autoComplete="off"
+          />
+
+          <label className={styles.label} htmlFor={`act-due-${sectionId}`}>
+            마감일 (선택)
+          </label>
+          <input
+            id={`act-due-${sectionId}`}
+            name="due_date"
+            type="datetime-local"
+            className={styles.input}
+          />
+
+          <div className={styles.formActions}>
+            <button type="submit" className={styles.ctaButton} disabled={isPending}>
+              {isPending ? '추가 중...' : '활동 추가'}
+            </button>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={() => setShowAddForm(false)}
+            >
+              취소
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          type="button"
+          className={styles.addActivityBtn}
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingId(null);
+          }}
+        >
+          + 활동 추가
+        </button>
+      )}
+    </div>
+  );
+}
+
+// --- Edit Forms ---
 
 function EditSectionForm({
   section,
@@ -349,31 +595,86 @@ function EditSectionForm({
   );
 }
 
-function ActivityList({ activities }: { activities: Activity[] }) {
-  if (activities.length === 0) {
-    return (
-      <p className={styles.noActivities}>등록된 활동이 없습니다.</p>
-    );
-  }
+function EditActivityForm({
+  activity,
+  onSubmit,
+  onCancel,
+  isPending,
+}: {
+  activity: Activity;
+  onSubmit: (fd: FormData) => void;
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const dueDateValue = activity.due_date
+    ? new Date(activity.due_date).toISOString().slice(0, 16)
+    : '';
 
   return (
-    <ul className={styles.activityList}>
-      {activities.map((a) => (
-        <li key={a.id} className={styles.activityItem}>
-          <span className={styles.typeBadge} data-type={a.type}>
-            {a.type === 'quiz' ? '퀴즈' : '과제'}
-          </span>
-          <span className={styles.activityTitle}>{a.title}</span>
-          {a.due_date && (
-            <span className={styles.dueDate}>
-              마감: {new Date(a.due_date).toLocaleDateString('ko-KR')}
-            </span>
-          )}
-          {!a.is_visible && (
-            <span className={styles.hiddenBadge}>숨김</span>
-          )}
-        </li>
-      ))}
-    </ul>
+    <form action={onSubmit} className={styles.addActivityForm}>
+      <input type="hidden" name="activity_id" value={activity.id} />
+
+      <label className={styles.label} htmlFor={`edit-act-title-${activity.id}`}>
+        제목
+      </label>
+      <input
+        id={`edit-act-title-${activity.id}`}
+        name="title"
+        className={styles.input}
+        defaultValue={activity.title}
+        required
+        autoComplete="off"
+      />
+
+      <label className={styles.label} htmlFor={`edit-act-desc-${activity.id}`}>
+        설명 (선택)
+      </label>
+      <textarea
+        id={`edit-act-desc-${activity.id}`}
+        name="description"
+        className={styles.textarea}
+        defaultValue={activity.description || ''}
+        autoComplete="off"
+      />
+
+      <div className={styles.fieldRow}>
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor={`edit-act-due-${activity.id}`}>
+            마감일 (선택)
+          </label>
+          <input
+            id={`edit-act-due-${activity.id}`}
+            name="due_date"
+            type="datetime-local"
+            className={styles.input}
+            defaultValue={dueDateValue}
+          />
+        </div>
+        <div className={styles.fieldGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              name="is_visible"
+              className={styles.checkbox}
+              defaultChecked={activity.is_visible}
+            />
+            학생에게 표시
+          </label>
+        </div>
+      </div>
+
+      <div className={styles.formActions}>
+        <button type="submit" className={styles.ctaButton} disabled={isPending}>
+          {isPending ? '저장 중...' : '저장'}
+        </button>
+        <button
+          type="button"
+          className={styles.cancelButton}
+          onClick={onCancel}
+        >
+          취소
+        </button>
+      </div>
+    </form>
   );
 }
