@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
 > Last updated: 2026-04-13 Session 6
-> Overall progress: 42%
+> Overall progress: 46%
 
 ## Phase Summary
 
@@ -10,7 +10,7 @@
 | 1 | Analysis | DONE | 100% | 0.5d | 13테이블 확장 스코프 확정 |
 | 2 | Design + Setup | DONE | 100% | 1d | 모든 태스크 완료 |
 | 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
-| 4 | Course CRUD + Sections | IN_PROGRESS | 25% | 1.5d | Course list page 완료 |
+| 4 | Course CRUD + Sections | IN_PROGRESS | 50% | 1.5d | Course list + creation 완료 |
 | 5 | Activity Modules (Quiz + Assignment) | NOT_STARTED | 0% | 2d | |
 | 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
@@ -54,7 +54,7 @@
 
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
-| Course creation (teacher) | NOT_STARTED | 25% | /courses/new, Server Action |
+| Course creation (teacher) | DONE | 25% | /courses/new, Server Action + role 체크 |
 | Course detail page | NOT_STARTED | 25% | /courses/[id], teacher/student 뷰 분기 |
 | Section management | NOT_STARTED | 25% | 섹션 추가/수정, sort_order 변경 |
 | Course list page | DONE | 25% | /courses, 역할별 3뷰 (admin/teacher/student) |
