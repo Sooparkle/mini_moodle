@@ -20,6 +20,7 @@ async function seed() {
   await sql`DELETE FROM question_attempts`;
   await sql`DELETE FROM quiz_attempts`;
   await sql`DELETE FROM quiz_questions`;
+  await sql`DELETE FROM assignment_submissions`;
   await sql`DELETE FROM enrollments`;
   await sql`DELETE FROM activities`;
   await sql`DELETE FROM sections`;
@@ -93,14 +94,20 @@ async function seed() {
   console.log('Sections created: 3');
 
   // 6. Activities (5개: 퀴즈 3 + 과제 2)
-  await sql`
+  const { rows: activities } = await sql`
     INSERT INTO activities (section_id, type, title, description, due_date, sort_order, is_visible) VALUES
       (${sec1.id}, 'quiz',       'HTML 태그 퀴즈',      '기본 HTML 태그에 대한 퀴즈',       '2026-03-08', 1, true),
       (${sec1.id}, 'assignment', 'HTML 페이지 만들기',   '자기소개 HTML 페이지를 작성하세요', '2026-03-10', 2, true),
       (${sec2.id}, 'quiz',       'CSS 선택자 퀴즈',     'CSS 선택자 유형에 대한 퀴즈',       '2026-03-15', 1, true),
       (${sec2.id}, 'assignment', 'CSS 스타일링 과제',    '주어진 HTML에 CSS를 적용하세요',    '2026-03-17', 2, true),
       (${sec3.id}, 'quiz',       'JavaScript 기초 퀴즈', '변수와 조건문에 대한 퀴즈',         '2026-03-22', 1, true)
+    RETURNING id, type, title
   `;
+  const htmlQuiz = activities[0];
+  const htmlAssignment = activities[1];
+  const cssQuiz = activities[2];
+  const cssAssignment = activities[3];
+  const jsQuiz = activities[4];
   console.log('Activities created: 5 (quiz 3 + assignment 2)');
 
   // 7. Enrollments (학생 2명 수강등록)
@@ -110,6 +117,92 @@ async function seed() {
       (${student2.id}, ${courseId})
   `;
   console.log('Enrollments created: 2 students enrolled in WEB101');
+
+  // 8. Quiz Questions (HTML 퀴즈 3문제, CSS 퀴즈 2문제, JS 퀴즈 2문제)
+  const { rows: htmlQuestions } = await sql`
+    INSERT INTO quiz_questions (activity_id, question_text, options, correct_answer, sort_order) VALUES
+      (${htmlQuiz.id}, 'HTML에서 가장 큰 제목 태그는?',
+       ${JSON.stringify(['<h6>', '<h1>', '<head>', '<title>'])}::jsonb, '<h1>', 1),
+      (${htmlQuiz.id}, '하이퍼링크를 만드는 태그는?',
+       ${JSON.stringify(['<link>', '<a>', '<href>', '<url>'])}::jsonb, '<a>', 2),
+      (${htmlQuiz.id}, '순서 없는 목록 태그는?',
+       ${JSON.stringify(['<ol>', '<li>', '<ul>', '<list>'])}::jsonb, '<ul>', 3)
+    RETURNING id
+  `;
+
+  await sql`
+    INSERT INTO quiz_questions (activity_id, question_text, options, correct_answer, sort_order) VALUES
+      (${cssQuiz.id}, 'CSS에서 클래스 선택자의 기호는?',
+       ${JSON.stringify(['.', '#', '@', '&'])}::jsonb, '.', 1),
+      (${cssQuiz.id}, 'CSS Box Model에서 콘텐츠와 테두리 사이의 영역은?',
+       ${JSON.stringify(['margin', 'padding', 'border', 'outline'])}::jsonb, 'padding', 2)
+  `;
+
+  await sql`
+    INSERT INTO quiz_questions (activity_id, question_text, options, correct_answer, sort_order) VALUES
+      (${jsQuiz.id}, 'JavaScript에서 변수를 선언하는 키워드가 아닌 것은?',
+       ${JSON.stringify(['let', 'const', 'var', 'int'])}::jsonb, 'int', 1),
+      (${jsQuiz.id}, '=== 연산자의 의미는?',
+       ${JSON.stringify(['대입', '값만 비교', '값과 타입 모두 비교', '타입만 비교'])}::jsonb, '값과 타입 모두 비교', 2)
+  `;
+  console.log('Quiz questions created: 7 (HTML 3 + CSS 2 + JS 2)');
+
+  // 9. Grade Items (활동별 성적 항목)
+  const { rows: gradeItems } = await sql`
+    INSERT INTO grade_items (course_id, activity_id, item_name, grade_max, grade_min, sort_order) VALUES
+      (${courseId}, ${htmlQuiz.id}, 'HTML 태그 퀴즈', 100, 0, 1),
+      (${courseId}, ${htmlAssignment.id}, 'HTML 페이지 만들기', 100, 0, 2),
+      (${courseId}, ${cssQuiz.id}, 'CSS 선택자 퀴즈', 100, 0, 3),
+      (${courseId}, ${cssAssignment.id}, 'CSS 스타일링 과제', 100, 0, 4),
+      (${courseId}, ${jsQuiz.id}, 'JavaScript 기초 퀴즈', 100, 0, 5)
+    RETURNING id, activity_id
+  `;
+  const gradeItemMap = Object.fromEntries(gradeItems.map((g) => [g.activity_id, g.id]));
+  console.log('Grade items created: 5');
+
+  // 10. Sample quiz attempt — student1이 HTML 퀴즈 완료 (2/3 정답)
+  const { rows: [htmlAttempt] } = await sql`
+    INSERT INTO quiz_attempts (user_id, activity_id, state, score, max_score, started_at, submitted_at)
+    VALUES (${student1.id}, ${htmlQuiz.id}, 'finished', 2, 3, '2026-03-07 10:00:00', '2026-03-07 10:15:00')
+    RETURNING id
+  `;
+
+  const { rows: questionAttempts } = await sql`
+    INSERT INTO question_attempts (quiz_attempt_id, question_id, current_answer, is_correct, mark, sequence_number) VALUES
+      (${htmlAttempt.id}, ${htmlQuestions[0].id}, '<h1>',   true,  1, 1),
+      (${htmlAttempt.id}, ${htmlQuestions[1].id}, '<link>', false, 0, 2),
+      (${htmlAttempt.id}, ${htmlQuestions[2].id}, '<ul>',   true,  1, 3)
+    RETURNING id
+  `;
+
+  await sql`
+    INSERT INTO question_attempt_steps (question_attempt_id, sequence_number, state, answer) VALUES
+      (${questionAttempts[0].id}, 1, 'complete', '<h1>'),
+      (${questionAttempts[1].id}, 1, 'complete', '<link>'),
+      (${questionAttempts[2].id}, 1, 'complete', '<ul>')
+  `;
+
+  // student1 HTML 퀴즈 성적 기록
+  await sql`
+    INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, time_modified)
+    VALUES (${gradeItemMap[htmlQuiz.id]}, ${student1.id}, 66.67, 66.67, '2026-03-07 10:15:00')
+  `;
+  console.log('Sample data: student1 completed HTML quiz (2/3 = 66.67%)');
+
+  // 11. Sample assignment submission — student1이 HTML 과제 제출
+  await sql`
+    INSERT INTO assignment_submissions (activity_id, user_id, submission_text, submitted_at)
+    VALUES (${htmlAssignment.id}, ${student1.id},
+      '<!DOCTYPE html>\n<html>\n<head><title>자기소개</title></head>\n<body>\n<h1>이학생</h1>\n<p>웹 프로그래밍을 배우고 있습니다.</p>\n</body>\n</html>',
+      '2026-03-09 14:00:00')
+  `;
+
+  // 교수가 HTML 과제 채점 (85점)
+  await sql`
+    INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, feedback, graded_by, time_modified)
+    VALUES (${gradeItemMap[htmlAssignment.id]}, ${student1.id}, 85, 85, 'HTML 구조가 잘 되어있습니다. 시맨틱 태그도 활용해보세요.', ${professor.id}, '2026-03-10 09:00:00')
+  `;
+  console.log('Sample data: student1 submitted HTML assignment (graded 85/100)');
 
   console.log('\nSeeding completed!');
   console.log('Test accounts (password: password123):');

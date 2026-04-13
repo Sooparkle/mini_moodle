@@ -143,6 +143,17 @@ CREATE TABLE grade_grades (
   time_modified TIMESTAMP DEFAULT NOW()
 );
 
+-- 14. assignment_submissions
+CREATE TABLE assignment_submissions (
+  id SERIAL PRIMARY KEY,
+  activity_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  submission_text TEXT NOT NULL,
+  submitted_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(activity_id, user_id)
+);
+
 -- 인덱스 (조회 성능)
 CREATE INDEX idx_role_assignments_user ON role_assignments(user_id);
 CREATE INDEX idx_role_assignments_course ON role_assignments(course_id);
@@ -154,3 +165,5 @@ CREATE INDEX idx_quiz_attempts_user_activity ON quiz_attempts(user_id, activity_
 CREATE INDEX idx_question_attempts_quiz ON question_attempts(quiz_attempt_id);
 CREATE INDEX idx_grade_grades_item ON grade_grades(grade_item_id);
 CREATE INDEX idx_grade_grades_user ON grade_grades(user_id);
+CREATE INDEX idx_assignment_submissions_activity ON assignment_submissions(activity_id);
+CREATE INDEX idx_assignment_submissions_user ON assignment_submissions(user_id);

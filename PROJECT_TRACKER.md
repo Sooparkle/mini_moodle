@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-13 Session 7
-> Overall progress: 65%
+> Last updated: 2026-04-13 Session 8
+> Overall progress: 90%
 
 ## Phase Summary
 
@@ -11,7 +11,7 @@
 | 2 | Design + Setup | DONE | 100% | 1d | 모든 태스크 완료 |
 | 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
 | 4 | Course CRUD + Sections | DONE | 100% | 1.5d | 모든 태스크 완료 |
-| 5 | Activity Modules (Quiz + Assignment) | IN_PROGRESS | 0% | 2d | |
+| 5 | Activity Modules (Quiz + Assignment) | DONE | 100% | 2d | 모든 태스크 완료 |
 | 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
 
@@ -50,7 +50,7 @@
 
 ---
 
-## Current Phase: Phase 4 — Course CRUD + Sections
+## Phase 4 — Course CRUD + Sections (DONE)
 
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
@@ -58,6 +58,19 @@
 | Course detail page | DONE | 25% | /courses/[id], 역할별 뷰 분기 + 접근 제어 |
 | Section management | DONE | 25% | 섹션 CRUD + 화살표 정렬 (withTransaction) |
 | Course list page | DONE | 25% | /courses, 역할별 3뷰 (admin/teacher/student) |
+
+---
+
+## Phase 5 — Activity Modules: Quiz + Assignment (DONE)
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 5a: 스키마 마이그레이션 + 시드 | DONE | 10% | assignment_submissions 14번째 테이블, 퀴즈 문제 + 샘플 시도 시드 |
+| 5b: Server Actions | DONE | 25% | activity.ts(CRUD), quiz.ts(문제관리+응시+채점), assignment.ts(제출+채점) |
+| 5c: 코스 내 활동 CRUD UI | DONE | 15% | SectionManager 확장 + 학생 상태 배지 + 활동 링크 |
+| 5d: 활동 상세 + 퀴즈 편집 | DONE | 20% | /activities/[id] 역할 분기, /activities/[id]/edit QuestionManager |
+| 5e: 퀴즈 응시 플로우 | DONE | 20% | /activities/[id]/attempt (QuizPlayer) + /activities/[id]/result |
+| 5f: 과제 제출 + 채점 | DONE | 10% | AssignmentSubmission + /activities/[id]/submissions (SubmissionGrader) |
 
 ---
 
@@ -101,6 +114,22 @@
 - 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
 - @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
 - project_history/CHANGELOG.md에 마이그레이션 항목 추가
+
+### 2026-04-13 Session 8 — Phase 5 완료 (Activity Modules: Quiz + Assignment)
+- assignment_submissions 14번째 테이블 추가 (마이그레이션 + schema.sql 업데이트)
+- seed.ts 확장: 퀴즈 문제 7개, grade_items 5개, student1 HTML 퀴즈 완료(2/3), HTML 과제 제출+채점(85점) 샘플 데이터
+- Server Actions 3파일: activity.ts(CRUD 4개), quiz.ts(문제CRUD 4개 + 응시3개), assignment.ts(제출+채점)
+- SectionManager 확장: 활동 추가/편집/삭제/정렬 + ActivityManager 컴포넌트
+- 코스 상세 학생뷰: 활동 링크화 + 상태 배지(미응시/진행중/완료/제출됨/채점됨)
+- /activities/[id] 역할 분기: 교수(통계+편집링크), 학생+퀴즈(응시/결과), 학생+과제(제출/채점결과)
+- /activities/[id]/edit: QuestionManager (문제 CRUD + 보기4개 + 정답 라디오)
+- /activities/[id]/attempt: QuizPlayer (전체문제 한번에 + 자동저장 + 확인모달)
+- /activities/[id]/result: 점수 + 문제별 정오답 리뷰 (정답=녹색, 오답=빨간 왼쪽 테두리)
+- /activities/[id]/submissions: SubmissionGrader (제출물 목록 + 점수입력 + 피드백)
+- AssignmentSubmission 클라이언트 컴포넌트: 제출/재제출 + 채점결과 표시
+- CSS composes 전체 제거 (Turbopack 비호환 → 인라인 속성으로 교체)
+- Phase 5 완료 (100%) → Phase 6 대기
+- Overall progress: 65% → 90%
 
 ### 2026-04-13 Session 7 — Phase 4 완료 (Course Detail + Section Management)
 - /courses/[id] 코스 상세 페이지 구현 (Server Component + 역할 분기)
