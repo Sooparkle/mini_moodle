@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-13 Session 6
-> Overall progress: 46%
+> Last updated: 2026-04-13 Session 7
+> Overall progress: 65%
 
 ## Phase Summary
 
@@ -10,8 +10,8 @@
 | 1 | Analysis | DONE | 100% | 0.5d | 13테이블 확장 스코프 확정 |
 | 2 | Design + Setup | DONE | 100% | 1d | 모든 태스크 완료 |
 | 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
-| 4 | Course CRUD + Sections | IN_PROGRESS | 50% | 1.5d | Course list + creation 완료 |
-| 5 | Activity Modules (Quiz + Assignment) | NOT_STARTED | 0% | 2d | |
+| 4 | Course CRUD + Sections | DONE | 100% | 1.5d | 모든 태스크 완료 |
+| 5 | Activity Modules (Quiz + Assignment) | IN_PROGRESS | 0% | 2d | |
 | 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
 
@@ -55,8 +55,8 @@
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
 | Course creation (teacher) | DONE | 25% | /courses/new, Server Action + role 체크 |
-| Course detail page | NOT_STARTED | 25% | /courses/[id], teacher/student 뷰 분기 |
-| Section management | NOT_STARTED | 25% | 섹션 추가/수정, sort_order 변경 |
+| Course detail page | DONE | 25% | /courses/[id], 역할별 뷰 분기 + 접근 제어 |
+| Section management | DONE | 25% | 섹션 CRUD + 화살표 정렬 (withTransaction) |
 | Course list page | DONE | 25% | /courses, 역할별 3뷰 (admin/teacher/student) |
 
 ---
@@ -101,6 +101,18 @@
 - 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
 - @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
 - project_history/CHANGELOG.md에 마이그레이션 항목 추가
+
+### 2026-04-13 Session 7 — Phase 4 완료 (Course Detail + Section Management)
+- /courses/[id] 코스 상세 페이지 구현 (Server Component + 역할 분기)
+- 접근 제어: 소유 교수(편집), admin/다른교수/학생(읽기전용), 미수강+비공개→리다이렉트
+- 학생 뷰: is_visible=false 섹션/활동 WHERE절 필터링 (데이터 누출 방지)
+- SectionManager 클라이언트 컴포넌트: 섹션 CRUD + 화살표 정렬 (optimistic update)
+- src/app/actions/section.ts: 4개 Server Action (create/update/delete/reorder)
+- reorderSection에서 withTransaction 첫 실전 사용 (인접 섹션 sort_order swap)
+- 병렬 쿼리 4개 (Promise.all): course, sections, activities, enrollment
+- course-detail.module.css: 디자인 토큰 기반 스타일링
+- Phase 4 완료 (100%) → Phase 5 IN_PROGRESS 전환
+- Overall progress: 46% → 65%
 
 ### 2026-04-13 Session 6 — Phase 4 시작 (Course List)
 - Route Group `(authenticated)` 리팩토링: dashboard/layout+nav를 공유 레이아웃으로 이동
