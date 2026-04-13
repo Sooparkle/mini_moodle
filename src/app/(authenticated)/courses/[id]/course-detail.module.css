@@ -291,9 +291,25 @@
 }
 
 .textarea {
-  composes: input;
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
   resize: vertical;
   min-height: 60px;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.textarea::placeholder {
+  color: var(--gray-400);
 }
 
 .fieldRow {
@@ -378,6 +394,155 @@
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   margin-bottom: var(--space-4);
+}
+
+/* Activity actions (teacher) */
+.activityActions {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.activityArrowBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 24px;
+  height: 24px;
+  font-size: 0.5rem;
+}
+
+.activityArrowBtn:hover:not(:disabled) {
+  border-color: var(--gray-400);
+}
+
+.activityArrowBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.activityEditBtn,
+.activityDeleteBtn {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.activityEditBtn {
+  color: var(--gray-600);
+}
+
+.activityEditBtn:hover {
+  border-color: var(--gray-400);
+}
+
+.activityDeleteBtn {
+  color: var(--danger);
+}
+
+.activityDeleteBtn:hover {
+  border-color: var(--danger);
+}
+
+/* Add activity button */
+.addActivityBtn {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  margin-top: var(--space-3);
+}
+
+.addActivityBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Add activity form */
+.addActivityForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.select {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.select:focus {
+  border-color: var(--accent);
+}
+
+/* Activity link */
+.activityLink {
+  color: var(--gray-900);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.activityLink:hover {
+  color: var(--accent);
+}
+
+/* Status badge */
+.statusBadge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.statusBadge[data-status="not_attempted"] {
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+.statusBadge[data-status="inprogress"] {
+  background: #dbeafe;
+  color: var(--accent);
+}
+
+.statusBadge[data-status="submitted"] {
+  background: #dbeafe;
+  color: var(--accent);
+}
+
+.statusBadge[data-status="finished"],
+.statusBadge[data-status="graded"] {
+  background: #dcfce7;
+  color: #16a34a;
 }
 
 /* Empty state */
