@@ -4,7 +4,7 @@
 
 ## Project Stack
 - Next.js 16.2.3 + React 19 + TypeScript (App Router, src/)
-- Vercel Postgres (@vercel/postgres)
+- Vercel Postgres (@vercel/postgres) — sunset 패키지, Phase 7에서 @neondatabase/serverless로 전환 예정
 - NextAuth.js v4 (Credentials Provider)
 - bcryptjs (password hashing)
 - CSS Modules (Tailwind 미사용)
@@ -93,3 +93,4 @@ If any task status changed, a file was created, or a feature was implemented in 
 - 트랜잭션: `import { withTransaction } from '@/lib/db'` 사용
 - `@vercel/postgres`의 `sql`을 별도 이름으로 re-export하지 않음 — 공식 API명 그대로 사용
 - Postgres 백엔드: 직접 가입한 Neon 계정 소유 (Vercel 마켓플레이스 통합 미사용). `@vercel/postgres` 패키지는 내부적으로 `@neondatabase/serverless`를 쓰므로 어느 Neon connection string과도 호환됨
+- **TODO (Phase 7)**: `@vercel/postgres`는 Vercel이 sunset한 패키지. 현재 동작에 문제없으나, Phase 7 마무리 시점에 `@neondatabase/serverless` 직접 사용으로 전환할 것 (import 경로 ~7파일 + withTransaction 수정)

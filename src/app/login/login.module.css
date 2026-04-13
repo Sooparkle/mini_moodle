@@ -97,3 +97,48 @@
   font-size: var(--text-sm);
   color: var(--gray-400);
 }
+
+/* Dev test accounts */
+.testAccounts {
+  margin-top: var(--space-4);
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.testAccounts summary {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  cursor: pointer;
+  user-select: none;
+}
+
+.testAccountList {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.testAccountBtn {
+  padding: var(--space-1) var(--space-3);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.testAccountBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.testAccountHint {
+  margin-top: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  font-family: var(--font-mono);
+}

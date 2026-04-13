@@ -2,7 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import styles from './dashboard.module.css';
+import styles from './nav.module.css';
 
 const ROLE_LABELS: Record<string, string> = {
   admin: '관리자',
@@ -10,16 +10,19 @@ const ROLE_LABELS: Record<string, string> = {
   student: '학생',
 };
 
-export default function DashboardNav({
+export default function Nav({
   user,
 }: {
   user: { name: string; email: string; role: string };
 }) {
   return (
     <header className={styles.nav}>
-      <nav>
+      <nav className={styles.navLeft}>
         <Link href="/dashboard" className={styles.logo}>
           MoodleLite
+        </Link>
+        <Link href="/courses" className={styles.navLink}>
+          코스
         </Link>
       </nav>
 

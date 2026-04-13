@@ -6,6 +6,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import styles from './login.module.css';
 
+const TEST_ACCOUNTS = [
+  { label: '관리자', email: 'admin@moodlelite.com' },
+  { label: '교수', email: 'prof@moodlelite.com' },
+  { label: '학생1', email: 'student1@moodlelite.com' },
+  { label: '학생2', email: 'student2@moodlelite.com' },
+] as const;
+
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState('');
@@ -73,6 +80,28 @@ export default function LoginPage() {
         <p className={styles.footer}>
           계정이 없으신가요? <Link href="/register">회원가입</Link>
         </p>
+
+        <details className={styles.testAccounts}>
+          <summary>테스트 계정</summary>
+          <div className={styles.testAccountList}>
+            {TEST_ACCOUNTS.map((acc) => (
+              <button
+                key={acc.email}
+                type="button"
+                className={styles.testAccountBtn}
+                onClick={() => {
+                  const emailInput = document.getElementById('email') as HTMLInputElement;
+                  const pwInput = document.getElementById('password') as HTMLInputElement;
+                  if (emailInput) emailInput.value = acc.email;
+                  if (pwInput) pwInput.value = 'password123';
+                }}
+              >
+                {acc.label}
+              </button>
+            ))}
+          </div>
+          <p className={styles.testAccountHint}>비밀번호: password123</p>
+        </details>
       </section>
     </main>
   );

@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { sql } from '@vercel/postgres';
+import Link from 'next/link';
 import styles from './dashboard.module.css';
 
 export default async function DashboardPage() {
@@ -43,6 +44,9 @@ async function AdminDashboard() {
           <p>{s.enrollment_count}건</p>
         </article>
       </section>
+      <p className={styles.viewAll}>
+        <Link href="/courses">코스 전체 보기 →</Link>
+      </p>
     </main>
   );
 }
@@ -75,6 +79,9 @@ async function TeacherDashboard({ userId, name }: { userId: number; name: string
           ))}
         </section>
       )}
+      <p className={styles.viewAll}>
+        <Link href="/courses">코스 전체 보기 →</Link>
+      </p>
     </main>
   );
 }
@@ -104,6 +111,9 @@ async function StudentDashboard({ userId, name }: { userId: number; name: string
           ))}
         </section>
       )}
+      <p className={styles.viewAll}>
+        <Link href="/courses">코스 전체 보기 →</Link>
+      </p>
     </main>
   );
 }

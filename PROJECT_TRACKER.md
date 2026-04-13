@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-12 Session 5
-> Overall progress: 37%
+> Last updated: 2026-04-13 Session 6
+> Overall progress: 42%
 
 ## Phase Summary
 
@@ -10,7 +10,7 @@
 | 1 | Analysis | DONE | 100% | 0.5d | 13테이블 확장 스코프 확정 |
 | 2 | Design + Setup | DONE | 100% | 1d | 모든 태스크 완료 |
 | 3 | Auth + Dashboard | DONE | 100% | 1.5d | 모든 태스크 완료 |
-| 4 | Course CRUD + Sections | IN_PROGRESS | 0% | 1.5d | |
+| 4 | Course CRUD + Sections | IN_PROGRESS | 25% | 1.5d | Course list page 완료 |
 | 5 | Activity Modules (Quiz + Assignment) | NOT_STARTED | 0% | 2d | |
 | 6 | Enrollment + Grades | NOT_STARTED | 0% | 1d | |
 | 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
@@ -57,7 +57,7 @@
 | Course creation (teacher) | NOT_STARTED | 25% | /courses/new, Server Action |
 | Course detail page | NOT_STARTED | 25% | /courses/[id], teacher/student 뷰 분기 |
 | Section management | NOT_STARTED | 25% | 섹션 추가/수정, sort_order 변경 |
-| Course list page | NOT_STARTED | 25% | /courses, 역할별 필터링 |
+| Course list page | DONE | 25% | /courses, 역할별 3뷰 (admin/teacher/student) |
 
 ---
 
@@ -101,6 +101,16 @@
 - 코드 변경 0줄 — POSTGRES_URL 환경변수 1개 교체로 끝
 - @vercel/postgres 패키지 그대로 사용 (내부적으로 @neondatabase/serverless 의존)
 - project_history/CHANGELOG.md에 마이그레이션 항목 추가
+
+### 2026-04-13 Session 6 — Phase 4 시작 (Course List)
+- Route Group `(authenticated)` 리팩토링: dashboard/layout+nav를 공유 레이아웃으로 이동
+- nav.module.css 분리 (dashboard.module.css에서 nav 스타일 추출)
+- Nav에 "코스" 링크 추가
+- /courses 페이지 구현: Admin(전체 코스), Teacher(내 코스 + 새 코스 CTA), Student(수강 중 + 수강 가능 2섹션)
+- 대시보드 각 역할에 "코스 전체 보기 →" 링크 추가
+- seed.ts에 admin 유저 추가 (admin@moodlelite.com)
+- CLAUDE.md에 @vercel/postgres Phase 7 전환 예정 메모 추가
+- Phase 4 progress: 0% → 25%
 
 ### 2026-04-12 Session 5 — Phase 3 완료 (Auth + Dashboard)
 - src/lib/auth.ts: NextAuth Credentials Provider 설정 (JWT에 user.id, user.role 주입)

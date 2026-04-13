@@ -40,22 +40,24 @@ async function seed() {
   const roleMap = Object.fromEntries(roles.map((r) => [r.shortname, r.id]));
   console.log('Roles created:', Object.keys(roleMap).join(', '));
 
-  // 2. Users (교수 1, 학생 2) — 비밀번호: password123
+  // 2. Users (관리자 1, 교수 1, 학생 2) — 비밀번호: password123
   const hash = await bcrypt.hash('password123', 10);
 
   const { rows: users } = await sql`
     INSERT INTO users (email, name, password_hash) VALUES
+      ('admin@moodlelite.com', '관리자', ${hash}),
       ('prof@moodlelite.com', '김교수', ${hash}),
       ('student1@moodlelite.com', '이학생', ${hash}),
       ('student2@moodlelite.com', '박학생', ${hash})
     RETURNING id, email
   `;
-  const [professor, student1, student2] = users;
+  const [admin, professor, student1, student2] = users;
   console.log('Users created:', users.map((u) => u.email).join(', '));
 
   // 3. Role assignments (사이트 레벨)
   await sql`
     INSERT INTO role_assignments (user_id, role_id) VALUES
+      (${admin.id}, ${roleMap.admin}),
       (${professor.id}, ${roleMap.teacher}),
       (${student1.id}, ${roleMap.student}),
       (${student2.id}, ${roleMap.student})
@@ -111,6 +113,7 @@ async function seed() {
 
   console.log('\nSeeding completed!');
   console.log('Test accounts (password: password123):');
+  console.log('  관리자: admin@moodlelite.com');
   console.log('  교수: prof@moodlelite.com');
   console.log('  학생1: student1@moodlelite.com');
   console.log('  학생2: student2@moodlelite.com');

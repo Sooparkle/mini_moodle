@@ -1,9 +1,9 @@
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
-import DashboardNav from './nav';
+import Nav from './nav';
 
-export default async function DashboardLayout({
+export default async function AuthenticatedLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default async function DashboardLayout({
 
   return (
     <>
-      <DashboardNav user={session.user} />
+      <Nav user={session.user} />
       {children}
     </>
   );
