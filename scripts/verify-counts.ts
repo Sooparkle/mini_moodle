@@ -8,7 +8,8 @@
 import { loadEnvConfig } from '@next/env';
 loadEnvConfig(process.cwd());
 
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
+const sql = neon(process.env.POSTGRES_URL!, { fullResults: true });
 
 async function verify() {
   const { rows } = await sql`

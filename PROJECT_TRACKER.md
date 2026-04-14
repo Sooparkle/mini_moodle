@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-13 Session 9
-> Overall progress: 94%
+> Last updated: 2026-04-14 Session 10
+> Overall progress: 96%
 
 ## Phase Summary
 
@@ -13,7 +13,7 @@
 | 4 | Course CRUD + Sections | DONE | 100% | 1.5d | 모든 태스크 완료 |
 | 5 | Activity Modules (Quiz + Assignment) | DONE | 100% | 2d | 모든 태스크 완료 |
 | 6 | Enrollment + Grades | DONE | 100% | 1d | 모든 태스크 완료 |
-| 7 | Polish + Deploy | NOT_STARTED | 0% | 0.5d | |
+| 7 | Polish + Deploy | IN_PROGRESS | 30% | 0.5d | Neon 패키지 전환 완료 |
 
 ## Progress Formula
 
@@ -88,7 +88,31 @@
 
 ---
 
+## Phase 7 — Polish + Deploy (IN_PROGRESS)
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 7a: @neondatabase/serverless 전환 | DONE | 30% | 19파일 import + 25곳 tx.query + db.ts 재작성 |
+| 7b: 성능 개선 (region, 병렬화, config) | NOT_STARTED | 15% | |
+| 7c: UX 안전망 (loading/error/not-found) | NOT_STARTED | 15% | |
+| 7d: 반응형 CSS | NOT_STARTED | 20% | |
+| 7e: Vercel 배포 + README | NOT_STARTED | 20% | |
+
+**Phase 7 progress: 30%**
+
+---
+
 ## Session Log
+
+### 2026-04-14 Session 10 — Phase 7 시작 (Neon 패키지 전환)
+- @vercel/postgres (deprecated) → @neondatabase/serverless 전환
+- src/lib/db.ts 재작성: neon() + Pool + withTransaction (PoolClient 기반)
+- 16개 앱 파일 import 변경: `@vercel/postgres` → `@/lib/db`
+- 4개 action 파일 tx.sql → tx.query() 변환 (activity, quiz, assignment, section)
+- 3개 스크립트 import 변경 (seed, apply-schema, verify-counts)
+- CLAUDE.md DB 컨벤션 업데이트
+- TypeScript 타입 체크 통과
+- Phase 7 progress: 0% → 30%, Overall: 94% → 96%
 
 ### 2026-04-10 Session 1
 - Phase 1 (Analysis) 완료 상태에서 시작

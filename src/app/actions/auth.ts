@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 type RegisterResult = { success: true } | { success: false; error: string };

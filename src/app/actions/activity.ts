@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withTransaction } from '@/lib/db';
@@ -68,28 +68,27 @@ export async function createActivity(formData: FormData): Promise<ActivityResult
   }
 
   const activityId = await withTransaction(async (tx) => {
-    const { rows: maxRow } = await tx.sql`
-      SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order
-      FROM activities WHERE section_id = ${sectionId}
-    `;
+    const { rows: maxRow } = await tx.query(
+      'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM activities WHERE section_id = $1',
+      [sectionId]
+    );
 
-    const { rows } = await tx.sql`
-      INSERT INTO activities (section_id, type, title, description, due_date, sort_order)
-      VALUES (${sectionId}, ${type}, ${title}, ${description}, ${dueDate}, ${maxRow[0].next_order})
-      RETURNING id
-    `;
+    const { rows } = await tx.query(
+      'INSERT INTO activities (section_id, type, title, description, due_date, sort_order) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [sectionId, type, title, description, dueDate, maxRow[0].next_order]
+    );
 
     const newId = rows[0].id;
 
     // grade_item 자동 생성
-    const { rows: maxGrade } = await tx.sql`
-      SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order
-      FROM grade_items WHERE course_id = ${auth.courseId}
-    `;
-    await tx.sql`
-      INSERT INTO grade_items (course_id, activity_id, item_name, grade_max, grade_min, sort_order)
-      VALUES (${auth.courseId}, ${newId}, ${title}, 100, 0, ${maxGrade[0].next_order})
-    `;
+    const { rows: maxGrade } = await tx.query(
+      'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM grade_items WHERE course_id = $1',
+      [auth.courseId]
+    );
+    await tx.query(
+      'INSERT INTO grade_items (course_id, activity_id, item_name, grade_max, grade_min, sort_order) VALUES ($1, $2, $3, $4, $5, $6)',
+      [auth.courseId, newId, title, 100, 0, maxGrade[0].next_order]
+    );
 
     return newId;
   });
@@ -179,8 +178,8 @@ export async function reorderActivity(formData: FormData): Promise<ActivityResul
   const adjacent = adjacentRows[0];
 
   await withTransaction(async (tx) => {
-    await tx.sql`UPDATE activities SET sort_order = ${adjacent.sort_order} WHERE id = ${current.id}`;
-    await tx.sql`UPDATE activities SET sort_order = ${current.sort_order} WHERE id = ${adjacent.id}`;
+    await tx.query('UPDATE activities SET sort_order = $1 WHERE id = $2', [adjacent.sort_order, current.id]);
+    await tx.query('UPDATE activities SET sort_order = $1 WHERE id = $2', [current.sort_order, adjacent.id]);
   });
 
   return { success: true };

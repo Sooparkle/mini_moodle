@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withTransaction } from '@/lib/db';
@@ -94,23 +94,21 @@ export async function gradeAssignment(formData: FormData): Promise<AssignmentRes
   }
 
   await withTransaction(async (tx) => {
-    const { rows: existingGrade } = await tx.sql`
-      SELECT id FROM grade_grades
-      WHERE grade_item_id = ${gradeItem.id} AND user_id = ${studentUserId}
-    `;
+    const { rows: existingGrade } = await tx.query(
+      'SELECT id FROM grade_grades WHERE grade_item_id = $1 AND user_id = $2',
+      [gradeItem.id, studentUserId]
+    );
 
     if (existingGrade.length > 0) {
-      await tx.sql`
-        UPDATE grade_grades
-        SET raw_grade = ${rawGrade}, final_grade = ${rawGrade},
-            feedback = ${feedback}, graded_by = ${teacherId}, time_modified = NOW()
-        WHERE id = ${existingGrade[0].id}
-      `;
+      await tx.query(
+        'UPDATE grade_grades SET raw_grade = $1, final_grade = $2, feedback = $3, graded_by = $4, time_modified = NOW() WHERE id = $5',
+        [rawGrade, rawGrade, feedback, teacherId, existingGrade[0].id]
+      );
     } else {
-      await tx.sql`
-        INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, feedback, graded_by, time_modified)
-        VALUES (${gradeItem.id}, ${studentUserId}, ${rawGrade}, ${rawGrade}, ${feedback}, ${teacherId}, NOW())
-      `;
+      await tx.query(
+        'INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, feedback, graded_by, time_modified) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+        [gradeItem.id, studentUserId, rawGrade, rawGrade, feedback, teacherId]
+      );
     }
   });
 

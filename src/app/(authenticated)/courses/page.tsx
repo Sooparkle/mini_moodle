@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import Link from 'next/link';
 import { EnrollButton } from './[id]/EnrollButton';
 import styles from './courses.module.css';

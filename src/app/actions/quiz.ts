@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withTransaction } from '@/lib/db';
@@ -188,8 +188,8 @@ export async function reorderQuestion(formData: FormData): Promise<QuizResult> {
   const adjacent = adjacentRows[0];
 
   await withTransaction(async (tx) => {
-    await tx.sql`UPDATE quiz_questions SET sort_order = ${adjacent.sort_order} WHERE id = ${current.id}`;
-    await tx.sql`UPDATE quiz_questions SET sort_order = ${current.sort_order} WHERE id = ${adjacent.id}`;
+    await tx.query('UPDATE quiz_questions SET sort_order = $1 WHERE id = $2', [adjacent.sort_order, current.id]);
+    await tx.query('UPDATE quiz_questions SET sort_order = $1 WHERE id = $2', [current.sort_order, adjacent.id]);
   });
 
   return { success: true };
@@ -245,23 +245,21 @@ export async function startQuizAttempt(formData: FormData): Promise<QuizResult> 
 
   // 새 시도 생성 (트랜잭션)
   const attemptId = await withTransaction(async (tx) => {
-    const { rows: [attempt] } = await tx.sql`
-      INSERT INTO quiz_attempts (user_id, activity_id, state, max_score)
-      VALUES (${userId}, ${activityId}, 'inprogress', ${questions.length})
-      RETURNING id
-    `;
+    const { rows: [attempt] } = await tx.query(
+      'INSERT INTO quiz_attempts (user_id, activity_id, state, max_score) VALUES ($1, $2, $3, $4) RETURNING id',
+      [userId, activityId, 'inprogress', questions.length]
+    );
 
     for (const q of questions) {
-      const { rows: [qa] } = await tx.sql`
-        INSERT INTO question_attempts (quiz_attempt_id, question_id, sequence_number)
-        VALUES (${attempt.id}, ${q.id}, ${q.sort_order})
-        RETURNING id
-      `;
+      const { rows: [qa] } = await tx.query(
+        'INSERT INTO question_attempts (quiz_attempt_id, question_id, sequence_number) VALUES ($1, $2, $3) RETURNING id',
+        [attempt.id, q.id, q.sort_order]
+      );
 
-      await tx.sql`
-        INSERT INTO question_attempt_steps (question_attempt_id, sequence_number, state)
-        VALUES (${qa.id}, 1, 'todo')
-      `;
+      await tx.query(
+        'INSERT INTO question_attempt_steps (question_attempt_id, sequence_number, state) VALUES ($1, $2, $3)',
+        [qa.id, 1, 'todo']
+      );
     }
 
     return attempt.id;
@@ -332,12 +330,10 @@ export async function submitQuizAttempt(formData: FormData): Promise<QuizResult>
 
   await withTransaction(async (tx) => {
     // 모든 문제 답변 + 정답 가져오기
-    const { rows: answers } = await tx.sql`
-      SELECT qa.id, qa.current_answer, qq.correct_answer
-      FROM question_attempts qa
-      JOIN quiz_questions qq ON qq.id = qa.question_id
-      WHERE qa.quiz_attempt_id = ${quizAttemptId}
-    `;
+    const { rows: answers } = await tx.query(
+      'SELECT qa.id, qa.current_answer, qq.correct_answer FROM question_attempts qa JOIN quiz_questions qq ON qq.id = qa.question_id WHERE qa.quiz_attempt_id = $1',
+      [quizAttemptId]
+    );
 
     let score = 0;
     const maxScore = answers.length;
@@ -348,46 +344,44 @@ export async function submitQuizAttempt(formData: FormData): Promise<QuizResult>
       const mark = isCorrect ? 1 : 0;
       if (isCorrect) score++;
 
-      await tx.sql`
-        UPDATE question_attempts
-        SET is_correct = ${isCorrect}, mark = ${mark}
-        WHERE id = ${a.id}
-      `;
+      await tx.query(
+        'UPDATE question_attempts SET is_correct = $1, mark = $2 WHERE id = $3',
+        [isCorrect, mark, a.id]
+      );
     }
 
     // 시도 완료 처리
-    await tx.sql`
-      UPDATE quiz_attempts
-      SET state = 'finished', score = ${score}, max_score = ${maxScore}, submitted_at = NOW()
-      WHERE id = ${quizAttemptId}
-    `;
+    await tx.query(
+      'UPDATE quiz_attempts SET state = $1, score = $2, max_score = $3, submitted_at = NOW() WHERE id = $4',
+      ['finished', score, maxScore, quizAttemptId]
+    );
 
     // grade_grades upsert
-    const { rows: gradeItemRows } = await tx.sql`
-      SELECT id, grade_max FROM grade_items WHERE activity_id = ${activityId}
-    `;
+    const { rows: gradeItemRows } = await tx.query(
+      'SELECT id, grade_max FROM grade_items WHERE activity_id = $1',
+      [activityId]
+    );
     if (gradeItemRows.length > 0) {
       const gradeItem = gradeItemRows[0];
       const rawGrade = maxScore > 0
         ? Math.round((score / maxScore) * gradeItem.grade_max * 100) / 100
         : 0;
 
-      const { rows: existingGrade } = await tx.sql`
-        SELECT id FROM grade_grades
-        WHERE grade_item_id = ${gradeItem.id} AND user_id = ${userId}
-      `;
+      const { rows: existingGrade } = await tx.query(
+        'SELECT id FROM grade_grades WHERE grade_item_id = $1 AND user_id = $2',
+        [gradeItem.id, userId]
+      );
 
       if (existingGrade.length > 0) {
-        await tx.sql`
-          UPDATE grade_grades
-          SET raw_grade = ${rawGrade}, final_grade = ${rawGrade}, time_modified = NOW()
-          WHERE id = ${existingGrade[0].id}
-        `;
+        await tx.query(
+          'UPDATE grade_grades SET raw_grade = $1, final_grade = $2, time_modified = NOW() WHERE id = $3',
+          [rawGrade, rawGrade, existingGrade[0].id]
+        );
       } else {
-        await tx.sql`
-          INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, time_modified)
-          VALUES (${gradeItem.id}, ${userId}, ${rawGrade}, ${rawGrade}, NOW())
-        `;
+        await tx.query(
+          'INSERT INTO grade_grades (grade_item_id, user_id, raw_grade, final_grade, time_modified) VALUES ($1, $2, $3, $4, NOW())',
+          [gradeItem.id, userId, rawGrade, rawGrade]
+        );
       }
     }
   });
