@@ -93,26 +93,27 @@ async function TeacherCourseList({ userId }: { userId: number }) {
 }
 
 async function StudentCourseList({ userId }: { userId: number }) {
-  const { rows: enrolled } = await sql`
-    SELECT c.id, c.title, c.short_name,
-           u.name AS teacher_name
-    FROM enrollments e
-    JOIN courses c ON c.id = e.course_id
-    JOIN users u ON u.id = c.created_by
-    WHERE e.user_id = ${userId}
-    ORDER BY e.enrolled_at DESC
-  `;
-
-  const { rows: available } = await sql`
-    SELECT c.id, c.title, c.short_name,
-           u.name AS teacher_name,
-           (SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = c.id) AS student_count
-    FROM courses c
-    JOIN users u ON u.id = c.created_by
-    WHERE c.is_published = true
-      AND c.id NOT IN (SELECT course_id FROM enrollments WHERE user_id = ${userId})
-    ORDER BY c.created_at DESC
-  `;
+  const [{ rows: enrolled }, { rows: available }] = await Promise.all([
+    sql`
+      SELECT c.id, c.title, c.short_name,
+             u.name AS teacher_name
+      FROM enrollments e
+      JOIN courses c ON c.id = e.course_id
+      JOIN users u ON u.id = c.created_by
+      WHERE e.user_id = ${userId}
+      ORDER BY e.enrolled_at DESC
+    `,
+    sql`
+      SELECT c.id, c.title, c.short_name,
+             u.name AS teacher_name,
+             (SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = c.id) AS student_count
+      FROM courses c
+      JOIN users u ON u.id = c.created_by
+      WHERE c.is_published = true
+        AND c.id NOT IN (SELECT course_id FROM enrollments WHERE user_id = ${userId})
+      ORDER BY c.created_at DESC
+    `,
+  ]);
 
   return (
     <main className={styles.content}>

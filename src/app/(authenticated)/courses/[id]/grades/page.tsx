@@ -58,32 +58,33 @@ export default async function GradesPage({
     redirect('/courses');
   }
 
-  // 단일 쿼리: 학생 × 성적항목 매트릭스
-  const { rows } = await sql`
-    SELECT
-      u.id AS student_id, u.name AS student_name, u.email AS student_email,
-      gi.id AS grade_item_id, gi.item_name, gi.grade_max, gi.sort_order,
-      gg.final_grade
-    FROM enrollments e
-    JOIN users u ON u.id = e.user_id
-    CROSS JOIN grade_items gi
-    LEFT JOIN grade_grades gg ON gg.grade_item_id = gi.id AND gg.user_id = u.id
-    WHERE e.course_id = ${courseId} AND gi.course_id = ${courseId}
-    ORDER BY u.name, gi.sort_order
-  `;
-
-  // 성적항목 목록 (중복 제거)
-  const { rows: itemRows } = await sql`
-    SELECT id, item_name, grade_max, sort_order
-    FROM grade_items
-    WHERE course_id = ${courseId}
-    ORDER BY sort_order
-  `;
-
-  // 수강생 수
-  const { rows: enrollmentRows } = await sql`
-    SELECT COUNT(*) AS count FROM enrollments WHERE course_id = ${courseId}
-  `;
+  // 3개 독립 쿼리 병렬 실행
+  const [{ rows }, { rows: itemRows }, { rows: enrollmentRows }] = await Promise.all([
+    // 학생 × 성적항목 매트릭스
+    sql`
+      SELECT
+        u.id AS student_id, u.name AS student_name, u.email AS student_email,
+        gi.id AS grade_item_id, gi.item_name, gi.grade_max, gi.sort_order,
+        gg.final_grade
+      FROM enrollments e
+      JOIN users u ON u.id = e.user_id
+      CROSS JOIN grade_items gi
+      LEFT JOIN grade_grades gg ON gg.grade_item_id = gi.id AND gg.user_id = u.id
+      WHERE e.course_id = ${courseId} AND gi.course_id = ${courseId}
+      ORDER BY u.name, gi.sort_order
+    `,
+    // 성적항목 목록
+    sql`
+      SELECT id, item_name, grade_max, sort_order
+      FROM grade_items
+      WHERE course_id = ${courseId}
+      ORDER BY sort_order
+    `,
+    // 수강생 수
+    sql`
+      SELECT COUNT(*) AS count FROM enrollments WHERE course_id = ${courseId}
+    `,
+  ]);
   const studentCount = Number(enrollmentRows[0].count);
 
   // 데이터 변환: 학생별 그룹핑

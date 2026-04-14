@@ -124,3 +124,14 @@ button {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --text-xl: 1.25rem;
+    --text-lg: 1.125rem;
+  }
+}

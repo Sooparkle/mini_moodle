@@ -28,7 +28,7 @@ export default function Nav({
 
       <div className={styles.navRight}>
         <span className={styles.userInfo}>
-          {user.name}
+          <span className={styles.userName}>{user.name}</span>
           <span className={styles.roleBadge}>
             {ROLE_LABELS[user.role] ?? user.role}
           </span>

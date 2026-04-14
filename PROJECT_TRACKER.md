@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
 > Last updated: 2026-04-14 Session 10
-> Overall progress: 96%
+> Overall progress: 99%
 
 ## Phase Summary
 
@@ -13,7 +13,7 @@
 | 4 | Course CRUD + Sections | DONE | 100% | 1.5d | 모든 태스크 완료 |
 | 5 | Activity Modules (Quiz + Assignment) | DONE | 100% | 2d | 모든 태스크 완료 |
 | 6 | Enrollment + Grades | DONE | 100% | 1d | 모든 태스크 완료 |
-| 7 | Polish + Deploy | IN_PROGRESS | 30% | 0.5d | Neon 패키지 전환 완료 |
+| 7 | Polish + Deploy | IN_PROGRESS | 80% | 0.5d | 배포만 남음 |
 
 ## Progress Formula
 
@@ -93,26 +93,28 @@
 | Task | Status | Weight | Notes |
 |------|--------|--------|-------|
 | 7a: @neondatabase/serverless 전환 | DONE | 30% | 19파일 import + 25곳 tx.query + db.ts 재작성 |
-| 7b: 성능 개선 (region, 병렬화, config) | NOT_STARTED | 15% | |
-| 7c: UX 안전망 (loading/error/not-found) | NOT_STARTED | 15% | |
-| 7d: 반응형 CSS | NOT_STARTED | 20% | |
-| 7e: Vercel 배포 + README | NOT_STARTED | 20% | |
+| 7b: 성능 개선 (region, 병렬화, config) | DONE | 15% | vercel.json syd1, Promise.all 병렬화, serverExternalPackages |
+| 7c: UX 안전망 (loading/error/not-found) | DONE | 15% | loading.tsx, error.tsx, not-found.tsx |
+| 7d: 반응형 CSS | DONE | 20% | 11개 CSS 파일 @media 768px breakpoint |
+| 7e: Vercel 배포 + README | IN_PROGRESS | 20% | README 완료, 배포 대기 |
 
-**Phase 7 progress: 30%**
+**Phase 7 progress: 80%**
 
 ---
 
 ## Session Log
 
-### 2026-04-14 Session 10 — Phase 7 시작 (Neon 패키지 전환)
-- @vercel/postgres (deprecated) → @neondatabase/serverless 전환
+### 2026-04-14 Session 10 — Phase 7 진행 (Polish + Deploy)
+- @vercel/postgres (deprecated) → @neondatabase/serverless 전환 (commit: 6751e74)
 - src/lib/db.ts 재작성: neon() + Pool + withTransaction (PoolClient 기반)
-- 16개 앱 파일 import 변경: `@vercel/postgres` → `@/lib/db`
-- 4개 action 파일 tx.sql → tx.query() 변환 (activity, quiz, assignment, section)
-- 3개 스크립트 import 변경 (seed, apply-schema, verify-counts)
-- CLAUDE.md DB 컨벤션 업데이트
-- TypeScript 타입 체크 통과
-- Phase 7 progress: 0% → 30%, Overall: 94% → 96%
+- 16개 앱 파일 import 변경, 4개 action tx.sql→tx.query(), 3개 스크립트 변경
+- vercel.json: regions syd1, next.config.ts: serverExternalPackages bcryptjs
+- 쿼리 병렬화: courses/page.tsx StudentCourseList, grades/page.tsx 3쿼리 Promise.all
+- UX 안전망: loading.tsx, error.tsx (인증 영역), not-found.tsx (루트)
+- 반응형 CSS: globals.css breakpoint + 11개 모듈 @media 768px
+- nav.tsx userName span 추가 (모바일에서 이름 숨김)
+- README.md 재작성 (테스트 계정, 로컬 실행, 프로젝트 구조)
+- Phase 7 progress: 0% → 80%, Overall: 94% → 99%
 
 ### 2026-04-10 Session 1
 - Phase 1 (Analysis) 완료 상태에서 시작

@@ -142,3 +142,11 @@
   color: var(--gray-400);
   font-family: var(--font-mono);
 }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card {
+    margin: var(--space-4) var(--space-3);
+    padding: var(--space-6);
+  }
+}
