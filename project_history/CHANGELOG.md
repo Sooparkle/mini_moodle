@@ -60,6 +60,46 @@ Format: Date | What Changed | Why | Timeline Impact
 
 - **Timeline impact:** 0 (2일 예산 내 완료)
 
+### 2026-04-17 — Phase 8 추가: xAPI Mini LRS + mini-RBAC
+
+- **What:** 원안 7-Phase를 8-Phase로 확장. P8 = "xAPI Statement 발행 훅 + Mini LRS 엔드포인트 + 관리자 대시보드 + Moodle 5.x 호환 검증·README LRS 섹션 + mini-RBAC(2 capability 검사)". 가중치 분모 8d → 9.5d.
+
+  - B4 범위 축소 메모(2026-04-17 재확인): 초기안의 "SCORM/xAPI/cmi5 비교표·ADL Adopter Registry 조회법·logstore_xapi transformer 해설" 같은 교육용 온보딩 노트는 제거. B4는 Moodle 5.x `core_xapi`(statement shape·`core_xapi_statement_post` web service·`\core_xapi\handler` 추상 클래스) 정합성 검증 + README 최소 섹션으로 한정.
+
+- **Why:**
+  1. 인튜브 포트폴리오 타겟팅 — 회사 독자 자산이 **Tube LRS**(ADL xAPI 1.0·2.0 인증, 조달청 디지털서비스몰 국내 최초 LRS 등재)뿐. TubeLearn은 Moodle 기반 커스터마이징으로 유비온 Coursemos·자이닉스 LearningX 2강에 편입 → 도메인 깊이로 차별화 안 됨
+  2. 학습 우선순위와 실무 우선순위 역전 — 원래 문서에서 7번(낮은 우선순위)이었던 xAPI가 입사 후 회의 비중으로는 1번
+  3. Moodle 4.2+ `core_xapi` 서브시스템은 LRS 외부 송출을 `logstore_xapi` contrib plugin에 위임 → 이 빈칸을 축소 모방하면 "Tube LRS가 소비하는 raw 데이터 shape" 체감 가능
+  4. 2025년 본격화된 AI 디지털교과서(AIDT) 정책은 발행사마다 학습데이터 허브를 요구 — LRS는 Tube LRS의 B2G 확장 축이기도 함
+
+- **후보 4개 비교 → B 채택:**
+  - B. xAPI Statement + Mini LRS (채택) — 스펙 명확해 25h에 "돌아가는 것" 가능, 인튜브 활용도 최상
+  - A. Role×Context×Capability 3차원 권한 — LMS 시장은 유비온·자이닉스가 장악, 차별화 아님. B의 보완책으로 B5 축소판 포함
+  - C. Plugin 아키텍처 흉내 — Next.js와 PHP Moodle 런타임 본질 차이. 오해 강화 위험
+  - D. Backup/Restore (.mbz 미니) — 실 운영에서 .mbz는 primary backup 아님. 도메인 오해 함정
+
+- **사용자 결정:**
+  1. P7 배포 완료 후 P8 시작 (게이트)
+  2. B3 Timeline 우선, 시간 여유 시 Heatmap·정답률 차트
+  3. B5 mini-RBAC 처음부터 계획에 포함 — Gate 2로 조건부 drop 규칙 보완
+
+- **Timeline impact:** 8d → 9.5d (가중치 분모 확장). Overall 진행률은 작업량 감소 없이 분모 증가로 **99% → 83%**로 소급 변경됨을 명시적으로 기록.
+
+- **Out of Scope (명시):** ADL LRS Conformance Suite 전체 통과 / State API·Activity Profile·Agent Profile / cmi5 / OAuth2·xAPI Launch / SCORM 어댑터 / 6-role archetype 전체 권한 분화 / voided statement 체인 / 학습자용 LRS 대시보드.
+
+- **핵심 설계 결정:**
+  - emit은 `withTransaction` **외부**에서 호출 — xAPI 실패로 사용자 action 롤백 금지
+  - `statement_id`는 `crypto.randomUUID()` (pgcrypto 확장 enable 불필요)
+  - actor identity = `mailto:` mbox 한 가지만 — 나머지 3 IFI는 POST 400
+  - verb IRI는 ADL vocabulary 고정 (submitted만 `activitystrea.ms/submit` 커뮤니티 verb — README 주석)
+  - LRS 인증 = BasicAuth 단일 `LRS_BASIC_USER`/`LRS_BASIC_PASS`(bcrypt 해시)
+  - `zod` 신규 도입으로 Statement schema validation
+  - RBAC 스키마는 Moodle 충실, 실제 검사는 `mod/quiz:grade` + `moodle/course:update` 2개만
+
+- **Go/No-go Gate:**
+  - Gate 1 (B3/8d 완료): 실제 세션으로 xapi_statements 5행+ · Timeline 렌더 확인 → 실패 시 B3+/B5 드롭
+  - Gate 2 (B5/8g 시작 전): 남은 시간 < 8h면 B5 drop + P8 가중치 1.5d→1.0d 재조정 + CHANGELOG 추가
+
 ### 2026-04-12 — CLAUDE.md 리팩토링: @참조 → SKILL.md 전환
 - **What:**
   - `@PROJECT_TRACKER.md` 참조 제거 → Rule 1에서 Read tool로 세션 시작 시 읽도록 전환

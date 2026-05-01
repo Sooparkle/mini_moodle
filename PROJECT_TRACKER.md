@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-14 Session 10
-> Overall progress: 99%
+> Last updated: 2026-04-17 Session 11
+> Overall progress: 83% (분모 8d→9.5d 확장: P8 추가로 소급 변경 — CHANGELOG 참조)
 
 ## Phase Summary
 
@@ -14,11 +14,12 @@
 | 5 | Activity Modules (Quiz + Assignment) | DONE | 100% | 2d | 모든 태스크 완료 |
 | 6 | Enrollment + Grades | DONE | 100% | 1d | 모든 태스크 완료 |
 | 7 | Polish + Deploy | IN_PROGRESS | 80% | 0.5d | 배포만 남음 |
+| 8 | xAPI Mini LRS + mini-RBAC | NOT_STARTED | 0% | 1.5d | B0–B5, P7 100% 후 IN_PROGRESS 전환 |
 
 ## Progress Formula
 
 - Phase progress = SUM(DONE task weights) + SUM(IN_PROGRESS task weights * 0.5)
-- Overall = (P1% * 0.5 + P2% * 1 + P3% * 1.5 + P4% * 1.5 + P5% * 2 + P6% * 1 + P7% * 0.5) / 8
+- Overall = (P1% * 0.5 + P2% * 1 + P3% * 1.5 + P4% * 1.5 + P5% * 2 + P6% * 1 + P7% * 0.5 + P8% * 1.5) / 9.5
 
 ---
 
@@ -102,7 +103,38 @@
 
 ---
 
+## Phase 8 — xAPI Mini LRS + mini-RBAC (NOT_STARTED)
+
+> 선행 조건: P7 = 100% (Vercel 배포 완료) — 이 조건 충족 전까지 IN_PROGRESS 전환 금지.
+> 상세 설계·반대 논리는 `project_history/PLAN.md` Phase 8 섹션 참조.
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 8a: xAPI 스키마 마이그레이션 | NOT_STARTED | 10% | xapi_statements, xapi_verbs, xapi_activity_types + rbac 3테이블 (총 6테이블 추가) |
+| 8b: Statement emission 훅 6지점 | NOT_STARTED | 25% | enrollment, quiz start/submit/answered, assignment, page view. tx 외부 emit |
+| 8c: LRS 엔드포인트 (POST/GET) | NOT_STARTED | 15% | BasicAuth, zod validation, 409 idempotency, 10개 규약 내부 테스트 |
+| 8d: Timeline 대시보드 | NOT_STARTED | 15% | /admin/lrs — 학습자 선택 → verb-object 시간 역순. MUST |
+| 8e: Heatmap + 정답률 차트 | NOT_STARTED | 10% | Gate 1 통과 + 시간 ≥ 4h일 때만 (조건부) |
+| 8f: Moodle 5.x 호환 검증 + README LRS 섹션 | NOT_STARTED | 10% | core_xapi statement shape + core_xapi_statement_post + \core_xapi\handler 정합 확인. README는 엔드포인트 사용법만 |
+| 8g: mini-RBAC 2 capability 검사 | NOT_STARTED | 15% | Gate 2 통과 시만. mod/quiz:grade + moodle/course:update |
+
+**Phase 8 progress: 0%**
+
+---
+
 ## Session Log
+
+### 2026-04-17 Session 11 — Phase 8 계획 확정 (xAPI Mini LRS + mini-RBAC)
+- 입사(인튜브) 도메인 대비용 새 Phase 8 추가 결정 — 회사 독자 자산인 Tube LRS(ADL xAPI 1.0/2.0 인증, 디지털서비스몰 등재) 기반
+- 후보 4개(xAPI / RBAC 3차원 / Plugin / Backup-Restore) 비교 결과 xAPI Mini LRS 단일 주제 채택. Moodle 4.2+ core_xapi 가 LRS 외부 송출을 plugin(logstore_xapi)에 맡기는 구조를 축소 모방
+- 사용자 결정: (1) P7 배포 완료 후 P8 시작 (2) B3 대시보드는 Timeline 우선 + 여유 시 Heatmap/정답률 (3) B5 mini-RBAC 처음부터 포함
+- B4 범위 축소(세션 말미 재확인): 초기안의 SCORM/xAPI/cmi5 비교표·ADL Registry 조회법·logstore_xapi transformer 해설 등 온보딩 노트 전부 제거. B4는 Moodle 5.x core_xapi(statement shape·core_xapi_statement_post·\core_xapi\handler) 정합성 검증 + README LRS 엔드포인트 사용법 최소 섹션만
+- PROJECT_TRACKER: 가중치 분모 8d → 9.5d 확장. Overall 99% → 83%로 소급 변경 (작업량 감소 아니고 분모 증가)
+- PLAN.md에 Phase 8 섹션 + 반대 논리 표 추가
+- CHANGELOG.md에 Phase 8 entry 추가 (가중치 분모 변경 명기)
+- Gate 1 (8d 완료): 실제 세션으로 xapi_statements 5행+ · Timeline 렌더 확인. 실패 시 8e/8g 드롭
+- Gate 2 (8g 시작 전): 남은 시간 < 8h면 drop + 1.0d로 재조정
+- **다음 세션 진입점**: (1) P7 Vercel 프로덕션 배포 완료 → P7=100% 마크, (2) P8 IN_PROGRESS 전환 + `feat/p8-xapi-lrs` 브랜치 생성, (3) 8a(xAPI+RBAC 스키마) 착수. 구현 상세는 `/Users/soo_parkle/.claude/plans/clever-sniffing-valley.md` 참조
 
 ### 2026-04-14 Session 10 — Phase 7 진행 (Polish + Deploy)
 - @vercel/postgres (deprecated) → @neondatabase/serverless 전환 (commit: 6751e74)
