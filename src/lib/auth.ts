@@ -1,6 +1,6 @@
 import type { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export const authOptions: AuthOptions = {

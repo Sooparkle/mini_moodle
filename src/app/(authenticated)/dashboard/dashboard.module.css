@@ -31,6 +31,7 @@
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  transition: border-color 0.15s, transform 0.15s;
 }
 
 .card h3 {
@@ -40,6 +41,59 @@
 .card p {
   font-size: var(--text-sm);
   color: var(--gray-400);
+}
+
+/* Card link */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.cardLink:hover .card {
+  border-color: var(--gray-400);
+  transform: translateY(-1px);
+}
+
+/* Overall grade summary */
+.overallCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
+.overallLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+}
+
+.overallValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Grade info on course cards */
+.gradeInfo {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-900);
+  margin-top: var(--space-2);
+}
+
+.gradeDetail {
+  font-weight: 400;
+  color: var(--gray-400);
+  margin-left: var(--space-2);
+  font-size: 0.75rem;
 }
 
 .emptyState {
@@ -60,4 +114,19 @@
 
 .viewAll a:hover {
   text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .overallCard {
+    padding: var(--space-3) var(--space-4);
+  }
 }

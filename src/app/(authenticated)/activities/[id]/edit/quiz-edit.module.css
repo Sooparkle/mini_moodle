@@ -1,0 +1,324 @@
+/* Content area */
+.content {
+  padding: var(--space-8) var(--space-6);
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Back link */
+.backLink {
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+
+.backLink:hover {
+  color: var(--gray-600);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.header h1 {
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+/* Question list */
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Question card */
+.questionCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.questionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.questionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.questionText {
+  flex: 1;
+  font-size: var(--text-base);
+  color: var(--gray-900);
+  line-height: 1.5;
+}
+
+.questionActions {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.arrowBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--gray-600);
+  font-size: 0.625rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.arrowBtn:hover:not(:disabled) {
+  border-color: var(--gray-400);
+}
+
+.arrowBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.editBtn,
+.deleteBtn {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.editBtn {
+  color: var(--gray-600);
+}
+
+.editBtn:hover {
+  border-color: var(--gray-400);
+}
+
+.deleteBtn {
+  color: var(--danger);
+}
+
+.deleteBtn:hover {
+  border-color: var(--danger);
+}
+
+/* Options display */
+.optionsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+}
+
+.optionItem[data-correct="true"] {
+  background: var(--success-bg);
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.optionLabel {
+  font-weight: 600;
+  color: var(--gray-400);
+}
+
+/* Question form */
+.questionForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-900);
+  margin-top: var(--space-2);
+}
+
+.input {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.textarea {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.optionsEditor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.optionRow input[type="radio"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.optionRow input[type="text"] {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+  flex: 1;
+}
+
+.optionRow input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ctaButton:hover {
+  background: var(--accent-hover);
+}
+
+.ctaButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.cancelButton:hover {
+  border-color: var(--gray-400);
+}
+
+/* Error */
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--gray-400);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: var(--space-4) var(--space-3);
+  }
+}

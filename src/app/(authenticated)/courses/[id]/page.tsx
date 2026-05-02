@@ -1,9 +1,10 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SectionManager } from './SectionManager';
+import { EnrollButton } from './EnrollButton';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -103,6 +104,47 @@ export default async function CourseDetailPage({
 
   const canEdit = role === 'teacher' && isOwner;
 
+  // 학생용 상태 배지 데이터
+  let statusByActivity: Record<number, string> = {};
+  if (isStudent) {
+    const [quizStatusResult, assignmentStatusResult] = await Promise.all([
+      sql`
+        SELECT a.id AS activity_id,
+          COALESCE(
+            (SELECT qa.state FROM quiz_attempts qa
+             WHERE qa.activity_id = a.id AND qa.user_id = ${Number(userId)}
+             ORDER BY qa.started_at DESC LIMIT 1),
+            'not_attempted'
+          ) AS status
+        FROM activities a
+        JOIN sections s ON s.id = a.section_id
+        WHERE s.course_id = ${courseId} AND a.type = 'quiz'
+          AND s.is_visible = true AND a.is_visible = true
+      `,
+      sql`
+        SELECT a.id AS activity_id,
+          CASE
+            WHEN gg.id IS NOT NULL THEN 'graded'
+            WHEN asub.id IS NOT NULL THEN 'submitted'
+            ELSE 'not_attempted'
+          END AS status
+        FROM activities a
+        JOIN sections s ON s.id = a.section_id
+        LEFT JOIN assignment_submissions asub
+          ON asub.activity_id = a.id AND asub.user_id = ${Number(userId)}
+        LEFT JOIN grade_items gi ON gi.activity_id = a.id
+        LEFT JOIN grade_grades gg
+          ON gg.grade_item_id = gi.id AND gg.user_id = ${Number(userId)}
+        WHERE s.course_id = ${courseId} AND a.type = 'assignment'
+          AND s.is_visible = true AND a.is_visible = true
+      `,
+    ]);
+
+    for (const row of [...quizStatusResult.rows, ...assignmentStatusResult.rows]) {
+      statusByActivity[row.activity_id] = row.status;
+    }
+  }
+
   return (
     <main className={styles.content}>
       <Link href="/courses" className={styles.backLink}>
@@ -132,28 +174,53 @@ export default async function CourseDetailPage({
         </div>
       </header>
 
+      {isStudent && !isEnrolled && course.is_published && (
+        <section className={styles.enrollBanner}>
+          <p>이 코스의 활동에 참여하려면 수강 등록이 필요합니다.</p>
+          <EnrollButton courseId={courseId} />
+        </section>
+      )}
+
       {canEdit ? (
-        <SectionManager
-          courseId={courseId}
-          initialSections={sections}
-          activitiesBySection={activitiesBySection}
-        />
+        <>
+          <div className={styles.courseActions}>
+            <Link href={`/courses/${courseId}/grades`} className={styles.gradesLink}>
+              성적표 보기 &rarr;
+            </Link>
+          </div>
+          <SectionManager
+            courseId={courseId}
+            initialSections={sections}
+            activitiesBySection={activitiesBySection}
+          />
+        </>
       ) : (
         <ReadOnlySections
           sections={sections}
           activitiesBySection={activitiesBySection}
+          statusByActivity={statusByActivity}
         />
       )}
     </main>
   );
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  not_attempted: '미응시',
+  inprogress: '진행중',
+  finished: '완료',
+  submitted: '제출됨',
+  graded: '채점됨',
+};
+
 function ReadOnlySections({
   sections,
   activitiesBySection,
+  statusByActivity,
 }: {
   sections: Section[];
   activitiesBySection: Record<number, Activity[]>;
+  statusByActivity: Record<number, string>;
 }) {
   if (sections.length === 0) {
     return <p className={styles.emptyState}>등록된 섹션이 없습니다.</p>;
@@ -175,14 +242,23 @@ function ReadOnlySections({
           {section.description && (
             <p className={styles.sectionDesc}>{section.description}</p>
           )}
-          <ActivityList activities={activitiesBySection[section.id] || []} />
+          <ActivityList
+            activities={activitiesBySection[section.id] || []}
+            statusByActivity={statusByActivity}
+          />
         </article>
       ))}
     </div>
   );
 }
 
-function ActivityList({ activities }: { activities: Activity[] }) {
+function ActivityList({
+  activities,
+  statusByActivity,
+}: {
+  activities: Activity[];
+  statusByActivity: Record<number, string>;
+}) {
   if (activities.length === 0) {
     return (
       <p className={styles.noActivities}>등록된 활동이 없습니다.</p>
@@ -191,22 +267,32 @@ function ActivityList({ activities }: { activities: Activity[] }) {
 
   return (
     <ul className={styles.activityList}>
-      {activities.map((a) => (
-        <li key={a.id} className={styles.activityItem}>
-          <span className={styles.typeBadge} data-type={a.type}>
-            {a.type === 'quiz' ? '퀴즈' : '과제'}
-          </span>
-          <span className={styles.activityTitle}>{a.title}</span>
-          {a.due_date && (
-            <span className={styles.dueDate}>
-              마감: {new Date(a.due_date).toLocaleDateString('ko-KR')}
+      {activities.map((a) => {
+        const status = statusByActivity[a.id];
+        return (
+          <li key={a.id} className={styles.activityItem}>
+            <span className={styles.typeBadge} data-type={a.type}>
+              {a.type === 'quiz' ? '퀴즈' : '과제'}
             </span>
-          )}
-          {!a.is_visible && (
-            <span className={styles.hiddenBadge}>숨김</span>
-          )}
-        </li>
-      ))}
+            <Link href={`/activities/${a.id}`} className={styles.activityLink}>
+              {a.title}
+            </Link>
+            {status && (
+              <span className={styles.statusBadge} data-status={status}>
+                {STATUS_LABELS[status] || status}
+              </span>
+            )}
+            {a.due_date && (
+              <span className={styles.dueDate}>
+                마감: {new Date(a.due_date).toLocaleDateString('ko-KR')}
+              </span>
+            )}
+            {!a.is_visible && (
+              <span className={styles.hiddenBadge}>숨김</span>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

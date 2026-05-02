@@ -1,7 +1,8 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import Link from 'next/link';
+import { EnrollButton } from './[id]/EnrollButton';
 import styles from './courses.module.css';
 
 export default async function CoursesPage() {
@@ -92,26 +93,27 @@ async function TeacherCourseList({ userId }: { userId: number }) {
 }
 
 async function StudentCourseList({ userId }: { userId: number }) {
-  const { rows: enrolled } = await sql`
-    SELECT c.id, c.title, c.short_name,
-           u.name AS teacher_name
-    FROM enrollments e
-    JOIN courses c ON c.id = e.course_id
-    JOIN users u ON u.id = c.created_by
-    WHERE e.user_id = ${userId}
-    ORDER BY e.enrolled_at DESC
-  `;
-
-  const { rows: available } = await sql`
-    SELECT c.id, c.title, c.short_name,
-           u.name AS teacher_name,
-           (SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = c.id) AS student_count
-    FROM courses c
-    JOIN users u ON u.id = c.created_by
-    WHERE c.is_published = true
-      AND c.id NOT IN (SELECT course_id FROM enrollments WHERE user_id = ${userId})
-    ORDER BY c.created_at DESC
-  `;
+  const [{ rows: enrolled }, { rows: available }] = await Promise.all([
+    sql`
+      SELECT c.id, c.title, c.short_name,
+             u.name AS teacher_name
+      FROM enrollments e
+      JOIN courses c ON c.id = e.course_id
+      JOIN users u ON u.id = c.created_by
+      WHERE e.user_id = ${userId}
+      ORDER BY e.enrolled_at DESC
+    `,
+    sql`
+      SELECT c.id, c.title, c.short_name,
+             u.name AS teacher_name,
+             (SELECT COUNT(*) FROM enrollments e2 WHERE e2.course_id = c.id) AS student_count
+      FROM courses c
+      JOIN users u ON u.id = c.created_by
+      WHERE c.is_published = true
+        AND c.id NOT IN (SELECT course_id FROM enrollments WHERE user_id = ${userId})
+      ORDER BY c.created_at DESC
+    `,
+  ]);
 
   return (
     <main className={styles.content}>
@@ -142,15 +144,20 @@ async function StudentCourseList({ userId }: { userId: number }) {
         ) : (
           <section className={styles.cardGrid}>
             {available.map((c) => (
-              <Link key={c.id} href={`/courses/${c.id}`} className={styles.cardLink}>
-                <article className={styles.card}>
-                  <h3>{c.title}</h3>
-                  <p className={styles.shortName}>{c.short_name}</p>
-                  <p className={styles.meta}>
-                    {c.teacher_name} · 수강생 {c.student_count}명
-                  </p>
-                </article>
-              </Link>
+              <article key={c.id} className={styles.card}>
+                <h3>
+                  <Link href={`/courses/${c.id}`} className={styles.courseLink}>
+                    {c.title}
+                  </Link>
+                </h3>
+                <p className={styles.shortName}>{c.short_name}</p>
+                <p className={styles.meta}>
+                  {c.teacher_name} · 수강생 {c.student_count}명
+                </p>
+                <div className={styles.cardActions}>
+                  <EnrollButton courseId={c.id} />
+                </div>
+              </article>
             ))}
           </section>
         )}

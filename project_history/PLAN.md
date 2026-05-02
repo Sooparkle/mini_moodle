@@ -68,6 +68,66 @@
 
 ---
 
+## Phase 8 — xAPI Mini LRS + mini-RBAC (1.5일, 29–39h)
+
+### 왜 이 Phase를 추가하는가
+인튜브 포트폴리오 관점에서 회사 독자 자산은 **Tube LRS**(ADL xAPI 1.0·2.0 인증, 조달청 디지털서비스몰 국내 최초 LRS 등재)이다. TubeLearn은 Moodle 기반 커스터마이징으로 유비온 Coursemos·자이닉스 LearningX 2강 구도에 편입 — 신입 기획자의 Quick Win이 도메인 깊이에서 나오기 어렵다. 학습 우선순위와 실무 우선순위가 이 지점에서 역전되므로, 원래 7순위로 뒀던 xAPI를 P8로 승격.
+
+Moodle 4.2+ `core_xapi` 서브시스템은 statement 수신·저장만 담당하고 외부 LRS 송출은 `logstore_xapi` 같은 contrib 플러그인에 위임한다. 이 빈칸이 Tube LRS 같은 제품의 존재 이유이며, MoodleLite의 6개 이벤트 지점에서 xAPI statement를 emit하고 수신 엔드포인트·raw 대시보드를 얹어 "Tube LRS가 소비하는 데이터 shape"를 체감할 수 있는 축소판을 만든다.
+
+### 후보 4개 비교 (채택 = B)
+
+| 후보 | 구현 난이도 | 실전 도메인 가치 | 인튜브 활용도 | 반대 논리 |
+|------|-------------|------------------|---------------|-----------|
+| **B. xAPI Statement + Mini LRS** | 중 | 최상 — 회사 독자 자산 심장 | 최상 — LRS 회의 즉시 참전 | LRS 전체가 아닌 최소 재현임을 전제로 |
+| A. Role×Context×Capability 3차원 권한 | 중–상 | 상 — 국내 B2B/대학 커스텀 role | 상 | LMS 시장은 유비온·자이닉스가 장악, 차별화 아님 |
+| C. Plugin 아키텍처 흉내 | 상 | 중 | 중 | Next.js는 PHP Moodle과 런타임 본질 차이, 억지 모방은 오해 강화 |
+| D. Backup/Restore (.mbz 미니) | 중 | 중–상 | 중 | 실제 .mbz는 primary backup 아님 — 도메인 오해 함정 |
+
+**채택 결과**: B를 단일 주제로. B5(mini-RBAC)는 사용자 결정에 따라 처음부터 포함하되 Gate 2 조건부 drop.
+
+### 태스크 B0–B5
+
+- **B0 스키마 (3–4h)** — `xapi_statements` (statement_id UUID, actor_mbox, verb_iri, verb_display, object_iri/type/name, result.score_raw/min/max/scaled, result.success/completion, result.duration, context_registration/platform, timestamp/stored, authority, raw JSONB, voided), `xapi_verbs`, `xapi_activity_types` (카탈로그). RBAC: `contexts(contextlevel, instanceid, path, depth)`, `capabilities(name, captype, contextlevel, riskbitmask)`, `role_capabilities(role_id, capability_id, context_id, permission -1000|-1|0|1)`. State API·Activity Profile·Agent Profile은 out-of-scope.
+- **B1 Statement 발행 훅 (6–8h)** — 6 지점 emit. (1) 코스 등록 → `registered`, (2) 퀴즈 시작 → `attempted`, (3) 퀴즈 제출 → `completed`, (4) 문항 채점 → `answered`, (5) 과제 제출 → `submitted`, (6) 활동 페이지 조회 → `experienced`. 퀴즈 관련 3개는 `withTransaction` **외부**에서 emit (emit 실패로 user action 롤백 금지).
+- **B2 LRS 엔드포인트 (4–6h)** — `POST /api/xapi/statements` (BasicAuth + zod validation + 409 idempotency + 400 bad IFI), `GET /api/xapi/statements?agent=&verb=&activity=&since=&until=&limit=`. ADL LRS Conformance Test Suite 전체는 out-of-scope — 10개 핵심 규약만 내부 테스트.
+- **B3 Timeline 대시보드 (3–4h)** — `/admin/lrs` 학습자 선택 → 시간 역순 verb-object 리스트 + 자연어 변환. 조건부 확장(6–8h 총 예산 중 남는 시간): Heatmap(학습자×activity 완료), 문항 정답률 차트.
+- **B4 Moodle 5.x 호환 검증 + README (2–3h)** — MoodleLite의 `xapi_statements` 컬럼과 POST/GET 엔드포인트 설계가 Moodle 5.x `core_xapi` 서브시스템의 현행 API(statement shape, `core_xapi_statement_post` web service, `\core_xapi\handler` 추상 클래스)와 정합하는지 확인하고 불일치분 보정. README에는 LRS 엔드포인트 사용법(curl 예시, `LRS_BASIC_USER`/`LRS_BASIC_PASS` 환경변수) 최소 섹션만 추가. (SCORM·cmi5 비교, ADL Registry 조회, logstore_xapi transformer 해설 등 교육용 노트는 out-of-scope.)
+- **B5 mini-RBAC (6–8h, 조건부)** — Moodle `db/access.php` 참고 20개 capability 카탈로그 시드 + `userHasCapability(userId, capName, contextId)` 구현. 실제 검사는 `mod/quiz:grade`(채점 버튼)와 `moodle/course:update`(코스 편집) 2개만. 6-role archetype 전체 적용은 out-of-scope.
+
+### Go/No-go Gate
+
+- **Gate 1 (B3/8d 완료 시)**: 실제 세션으로 퀴즈+과제 완료 → `xapi_statements` 5행 이상 + Timeline 렌더 확인. 실패 시 B3+/B5 드롭 후 B4로 직행.
+- **Gate 2 (B5/8g 시작 전)**: 남은 시간 측정. < 8h면 B5 drop + P8 가중치 1.5d → 1.0d 재조정 + CHANGELOG 기록.
+
+### 핵심 설계 결정 요약
+
+| # | 결정 | 이유 |
+|---|------|------|
+| 1 | emit은 tx **외부** | xAPI 실패가 사용자 action 롤백해선 안 됨 |
+| 2 | `crypto.randomUUID()` | pgcrypto extension 불필요, 스키마 SERIAL 일관성 유지 |
+| 3 | actor = `mailto:` mbox만 | 4가지 IFI 중 단일, 나머지는 POST 400 |
+| 4 | ADL vocabulary 고정 IRI | attempted/completed/answered/registered/experienced. submitted는 `activitystrea.ms/submit` (README 명기) |
+| 5 | BasicAuth 단일 계정 | OAuth2·xAPI Launch out-of-scope |
+| 6 | `zod` 신규 도입 | statement validation (actor·verb·object·timestamp·score range) |
+| 7 | RBAC 스키마 전체, 검사는 2개만 | Moodle 모델 학습 + 1주 완료 리스크 균형 |
+| 8 | page-view emit throttle 없음 | 노이즈는 Timeline UI 필터로 완화 |
+
+### 반대 논리 및 한계 (P8 전용)
+
+| 항목 | 내용 |
+|------|------|
+| B5 포함 선택으로 29–39h → 1주 상한 근접 | Gate 2에서 강제 drop 규칙. 지연 시 자동 재조정 |
+| emit 동기 처리로 user latency +5–20ms | 수업 규모에선 수용, 실제 LRS는 비동기임을 README에 명기 |
+| mbox 단일 IFI | 실 운영은 account(SSO 연동) 흔함 — 학습 목적 최소 subset |
+| `submitted` verb가 ADL vocabulary 아님 | activitystrea.ms 커뮤니티 verb 사용, README 주석 |
+| ADL Conformance Suite 미실행 | 10개 내부 규약만 → 공식 인증 ≠ 스펙 학습 |
+| page-view throttle 부재 | bot·prefetch 노이즈 누적, Timeline 필터로 완화 |
+| RBAC contextlevel hierarchy 단순화 | system(10)/category(40)/course(50)/module(70) 중 course·module만 실검사 |
+| PROJECT_TRACKER 분모 8d→9.5d | 과거 % 소급 변경됨 (99%→83%). CHANGELOG에 명기 |
+
+---
+
 ## VS Code CLI 작업 시 권장 순서 (바로 실행용)
 
 ```bash

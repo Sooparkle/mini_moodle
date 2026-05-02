@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { sql } from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { withTransaction } from '@/lib/db';
@@ -140,8 +140,8 @@ export async function reorderSection(formData: FormData): Promise<SectionResult>
   const adjacent = adjacentRows[0];
 
   await withTransaction(async (tx) => {
-    await tx.sql`UPDATE sections SET sort_order = ${adjacent.sort_order} WHERE id = ${current.id}`;
-    await tx.sql`UPDATE sections SET sort_order = ${current.sort_order} WHERE id = ${adjacent.id}`;
+    await tx.query('UPDATE sections SET sort_order = $1 WHERE id = $2', [adjacent.sort_order, current.id]);
+    await tx.query('UPDATE sections SET sort_order = $1 WHERE id = $2', [current.sort_order, adjacent.id]);
   });
 
   return { success: true };

@@ -1,0 +1,206 @@
+/* Content area */
+.content {
+  padding: var(--space-8) var(--space-6);
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Back link */
+.backLink {
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+
+.backLink:hover {
+  color: var(--gray-600);
+}
+
+/* Header */
+.header {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.header h1 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+}
+
+/* Stats grid */
+.statsGrid {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.statCard {
+  flex: 1;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  margin-bottom: var(--space-1);
+}
+
+.statValue {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Section title */
+.sectionTitle {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+
+/* Item averages */
+.itemList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-8) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.itemName {
+  font-weight: 500;
+  color: var(--gray-900);
+  flex: 1;
+}
+
+.itemAvg {
+  font-family: var(--font-mono);
+  color: var(--gray-600);
+}
+
+.itemCount {
+  color: var(--gray-400);
+  font-size: 0.75rem;
+}
+
+/* Student list */
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.studentCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.studentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.studentName {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.studentEmail {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  margin-left: var(--space-2);
+}
+
+.studentPercent {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Grade items inside student card */
+.gradeList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--gray-200);
+  padding-top: var(--space-3);
+}
+
+.gradeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.gradeRow + .gradeRow {
+  border-top: 1px solid var(--gray-100);
+}
+
+.gradeName {
+  flex: 1;
+  color: var(--gray-600);
+}
+
+.gradeValue {
+  font-family: var(--font-mono);
+  color: var(--gray-900);
+}
+
+.gradeNotAttempted {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--gray-400);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .studentHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}

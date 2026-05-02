@@ -1,0 +1,221 @@
+/* Content area */
+.content {
+  padding: var(--space-8) var(--space-6);
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Back link */
+.backLink {
+  display: inline-block;
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  text-decoration: none;
+  margin-bottom: var(--space-6);
+  transition: color 0.15s;
+}
+
+.backLink:hover {
+  color: var(--gray-600);
+}
+
+/* Header */
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.header h1 {
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+}
+
+/* Submission list */
+.submissionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Submission card */
+.submissionCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.submissionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.studentName {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.studentEmail {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  margin-left: var(--space-2);
+}
+
+.submittedAt {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+}
+
+.submissionText {
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Grading form */
+.gradeForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--gray-200);
+  padding-top: var(--space-4);
+}
+
+.gradeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.gradeInput {
+  width: 80px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.gradeInput:focus {
+  border-color: var(--accent);
+}
+
+.gradeMax {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+}
+
+.textarea {
+  padding: var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.15s;
+}
+
+.textarea:focus {
+  border-color: var(--accent);
+}
+
+.formActions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.gradeBtn {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.gradeBtn:hover {
+  background: var(--accent-hover);
+}
+
+.gradeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Existing grade */
+.existingGrade {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  background: var(--success-bg);
+  color: #16a34a;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.existingFeedback {
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  margin-top: var(--space-2);
+  line-height: 1.5;
+}
+
+/* Error */
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--gray-400);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    padding: var(--space-4) var(--space-3);
+  }
+}
