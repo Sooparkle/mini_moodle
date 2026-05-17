@@ -4,16 +4,27 @@ import { sql } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AssignmentSubmission } from './AssignmentSubmission';
+import { PageView } from './PageView';
+import { UrlView } from './UrlView';
+import { FileView } from './FileView';
+import { ForumView } from './ForumView';
+import { activityTypeLabel } from '@/lib/activity-types';
 import styles from './activity-detail.module.css';
 
 export default async function ActivityDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const activityId = Number(id);
   if (isNaN(activityId)) notFound();
+
+  const topicParam = typeof sp.topic === 'string' ? Number(sp.topic) : null;
+  const selectedTopicId = topicParam && !isNaN(topicParam) ? topicParam : null;
 
   const session = (await getServerSession(authOptions))!;
   const { role, id: userId } = session.user;
@@ -41,11 +52,13 @@ export default async function ActivityDetailPage({
     if (enrollRows.length === 0) redirect('/courses');
   }
 
-  // 퀴즈 문제 수
-  const { rows: questionCountRows } = await sql`
-    SELECT COUNT(*)::int AS count FROM quiz_questions WHERE activity_id = ${activityId}
-  `;
-  const questionCount = questionCountRows[0].count;
+  // 퀴즈 문제 수 (퀴즈 타입에서만 의미 있음)
+  const questionCount =
+    activity.type === 'quiz'
+      ? (
+          await sql`SELECT COUNT(*)::int AS count FROM quiz_questions WHERE activity_id = ${activityId}`
+        ).rows[0].count
+      : 0;
 
   return (
     <main className={styles.content}>
@@ -56,7 +69,7 @@ export default async function ActivityDetailPage({
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <span className={styles.typeBadge}>
-            {activity.type === 'quiz' ? '퀴즈' : '과제'}
+            {activityTypeLabel(activity.type)}
           </span>
           <h1>{activity.title}</h1>
         </div>
@@ -74,23 +87,79 @@ export default async function ActivityDetailPage({
         </div>
       </header>
 
-      {canEdit ? (
-        <TeacherView
-          activity={activity}
-          activityId={activityId}
-          questionCount={questionCount}
-        />
-      ) : role === 'student' ? (
-        activity.type === 'quiz' ? (
-          <StudentQuizView activityId={activityId} userId={Number(userId)} questionCount={questionCount} />
-        ) : (
-          <StudentAssignmentView activityId={activityId} userId={Number(userId)} activity={activity} />
-        )
-      ) : (
-        <p className={styles.emptyState}>접근할 수 없습니다.</p>
-      )}
+      {renderActivityBody(activity.type, {
+        activity,
+        activityId,
+        canEdit,
+        role,
+        userId: Number(userId),
+        questionCount,
+        selectedTopicId,
+      })}
     </main>
   );
+}
+
+function renderActivityBody(
+  type: string,
+  ctx: {
+    activity: Record<string, unknown>;
+    activityId: number;
+    canEdit: boolean;
+    role: string;
+    userId: number;
+    questionCount: number;
+    selectedTopicId: number | null;
+  },
+) {
+  if (type === 'quiz' || type === 'assignment') {
+    if (ctx.canEdit) {
+      return (
+        <TeacherView
+          activity={ctx.activity}
+          activityId={ctx.activityId}
+          questionCount={ctx.questionCount}
+        />
+      );
+    }
+    if (ctx.role !== 'student') {
+      return <p className={styles.emptyState}>접근할 수 없습니다.</p>;
+    }
+    return type === 'quiz' ? (
+      <StudentQuizView
+        activityId={ctx.activityId}
+        userId={ctx.userId}
+        questionCount={ctx.questionCount}
+      />
+    ) : (
+      <StudentAssignmentView
+        activityId={ctx.activityId}
+        userId={ctx.userId}
+        activity={ctx.activity}
+      />
+    );
+  }
+
+  if (type === 'page') {
+    return <PageView activityId={ctx.activityId} canEdit={ctx.canEdit} />;
+  }
+  if (type === 'url') {
+    return <UrlView activityId={ctx.activityId} canEdit={ctx.canEdit} />;
+  }
+  if (type === 'file') {
+    return <FileView activityId={ctx.activityId} canEdit={ctx.canEdit} />;
+  }
+  if (type === 'forum') {
+    return (
+      <ForumView
+        activityId={ctx.activityId}
+        currentUserId={ctx.userId}
+        isOwner={ctx.canEdit}
+        selectedTopicId={ctx.selectedTopicId}
+      />
+    );
+  }
+  return <p className={styles.emptyState}>알 수 없는 활동 유형입니다.</p>;
 }
 
 // --- Teacher View ---

@@ -49,6 +49,14 @@ async function verifyActivityOwner(activityId: number) {
   return { ok: true as const, userId, sectionId: rows[0].section_id as number, courseId: rows[0].course_id as number };
 }
 
+const ALLOWED_TYPES = ['quiz', 'assignment', 'page', 'url', 'file', 'forum'] as const;
+const GRADED_TYPES = new Set(['quiz', 'assignment']);
+type ActivityType = (typeof ALLOWED_TYPES)[number];
+
+function isAllowedType(t: string): t is ActivityType {
+  return (ALLOWED_TYPES as readonly string[]).includes(t);
+}
+
 export async function createActivity(formData: FormData): Promise<ActivityResult> {
   const sectionId = Number(formData.get('section_id'));
   if (isNaN(sectionId)) return { success: false, error: '잘못된 섹션 ID입니다.' };
@@ -63,8 +71,24 @@ export async function createActivity(formData: FormData): Promise<ActivityResult
   const dueDate = dueDateStr ? new Date(dueDateStr).toISOString() : null;
 
   if (!title) return { success: false, error: '활동 제목은 필수입니다.' };
-  if (type !== 'quiz' && type !== 'assignment') {
-    return { success: false, error: '활동 유형은 quiz 또는 assignment여야 합니다.' };
+  if (!isAllowedType(type)) {
+    return { success: false, error: '지원하지 않는 활동 유형입니다.' };
+  }
+
+  // type별 추가 필드 사전 검증
+  const externalUrl = (formData.get('external_url') as string | null)?.trim() || '';
+  const openInNewTab = formData.get('open_in_new_tab') !== 'off';
+  const fileName = (formData.get('file_name') as string | null)?.trim() || '';
+  const fileUrl = (formData.get('file_url') as string | null)?.trim() || '';
+  const fileSizeStr = formData.get('file_size_bytes') as string | null;
+  const fileSize = fileSizeStr ? Number(fileSizeStr) : null;
+  const pageBody = (formData.get('body') as string | null) ?? '';
+
+  if (type === 'url' && !externalUrl) {
+    return { success: false, error: 'URL 주소는 필수입니다.' };
+  }
+  if (type === 'file' && (!fileName || !fileUrl)) {
+    return { success: false, error: '파일 이름과 URL은 필수입니다.' };
   }
 
   const activityId = await withTransaction(async (tx) => {
@@ -80,15 +104,36 @@ export async function createActivity(formData: FormData): Promise<ActivityResult
 
     const newId = rows[0].id;
 
-    // grade_item 자동 생성
-    const { rows: maxGrade } = await tx.query(
-      'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM grade_items WHERE course_id = $1',
-      [auth.courseId]
-    );
-    await tx.query(
-      'INSERT INTO grade_items (course_id, activity_id, item_name, grade_max, grade_min, sort_order) VALUES ($1, $2, $3, $4, $5, $6)',
-      [auth.courseId, newId, title, 100, 0, maxGrade[0].next_order]
-    );
+    // type별 자식 테이블 row
+    if (type === 'page') {
+      await tx.query(
+        'INSERT INTO activity_pages (activity_id, body) VALUES ($1, $2)',
+        [newId, pageBody]
+      );
+    } else if (type === 'url') {
+      await tx.query(
+        'INSERT INTO activity_urls (activity_id, external_url, open_in_new_tab) VALUES ($1, $2, $3)',
+        [newId, externalUrl, openInNewTab]
+      );
+    } else if (type === 'file') {
+      await tx.query(
+        'INSERT INTO activity_files (activity_id, file_name, file_url, file_size_bytes) VALUES ($1, $2, $3, $4)',
+        [newId, fileName, fileUrl, fileSize]
+      );
+    }
+    // forum: 자식 row 없음 (게시물은 사용 시점에 생성)
+
+    // grade_item은 채점 가능 타입만
+    if (GRADED_TYPES.has(type)) {
+      const { rows: maxGrade } = await tx.query(
+        'SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM grade_items WHERE course_id = $1',
+        [auth.courseId]
+      );
+      await tx.query(
+        'INSERT INTO grade_items (course_id, activity_id, item_name, grade_max, grade_min, sort_order) VALUES ($1, $2, $3, $4, $5, $6)',
+        [auth.courseId, newId, title, 100, 0, maxGrade[0].next_order]
+      );
+    }
 
     return newId;
   });

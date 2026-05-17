@@ -60,7 +60,7 @@ CREATE TABLE sections (
 CREATE TABLE activities (
   id SERIAL PRIMARY KEY,
   section_id INTEGER NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
-  type VARCHAR(20) NOT NULL CHECK (type IN ('quiz', 'assignment')),
+  type VARCHAR(20) NOT NULL CHECK (type IN ('quiz', 'assignment', 'page', 'url', 'file', 'forum')),
   title VARCHAR(255) NOT NULL,
   description TEXT,
   due_date TIMESTAMP,
@@ -154,6 +154,38 @@ CREATE TABLE assignment_submissions (
   UNIQUE(activity_id, user_id)
 );
 
+-- 15. activity_pages (Phase 10: 페이지 리소스)
+CREATE TABLE activity_pages (
+  activity_id INTEGER PRIMARY KEY REFERENCES activities(id) ON DELETE CASCADE,
+  body TEXT NOT NULL DEFAULT ''
+);
+
+-- 16. activity_urls (Phase 10: 외부 URL 리소스)
+CREATE TABLE activity_urls (
+  activity_id INTEGER PRIMARY KEY REFERENCES activities(id) ON DELETE CASCADE,
+  external_url TEXT NOT NULL,
+  open_in_new_tab BOOLEAN DEFAULT TRUE
+);
+
+-- 17. activity_files (Phase 10: 파일 리소스 — URL 기반)
+CREATE TABLE activity_files (
+  activity_id INTEGER PRIMARY KEY REFERENCES activities(id) ON DELETE CASCADE,
+  file_name VARCHAR(255) NOT NULL,
+  file_url TEXT NOT NULL,
+  file_size_bytes BIGINT
+);
+
+-- 18. forum_posts (Phase 10: 토론 — parent_id NULL=topic)
+CREATE TABLE forum_posts (
+  id SERIAL PRIMARY KEY,
+  activity_id INTEGER NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  parent_id INTEGER REFERENCES forum_posts(id) ON DELETE CASCADE,
+  subject VARCHAR(255),
+  body TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- 인덱스 (조회 성능)
 CREATE INDEX idx_role_assignments_user ON role_assignments(user_id);
 CREATE INDEX idx_role_assignments_course ON role_assignments(course_id);
@@ -167,3 +199,5 @@ CREATE INDEX idx_grade_grades_item ON grade_grades(grade_item_id);
 CREATE INDEX idx_grade_grades_user ON grade_grades(user_id);
 CREATE INDEX idx_assignment_submissions_activity ON assignment_submissions(activity_id);
 CREATE INDEX idx_assignment_submissions_user ON assignment_submissions(user_id);
+CREATE INDEX idx_forum_posts_activity ON forum_posts(activity_id);
+CREATE INDEX idx_forum_posts_parent ON forum_posts(parent_id);

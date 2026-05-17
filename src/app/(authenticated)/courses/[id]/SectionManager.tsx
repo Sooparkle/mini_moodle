@@ -10,11 +10,12 @@ import {
   reorderSection,
 } from '@/app/actions/section';
 import {
-  createActivity,
   updateActivity,
   deleteActivity,
   reorderActivity,
 } from '@/app/actions/activity';
+import { ActivityChooser } from './ActivityChooser';
+import { activityTypeLabel } from '@/lib/activity-types';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -288,25 +289,10 @@ function ActivityManager({
   activities: Activity[];
 }) {
   const router = useRouter();
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showChooser, setShowChooser] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
-
-  async function handleCreate(formData: FormData) {
-    formData.set('section_id', String(sectionId));
-    setError('');
-
-    startTransition(async () => {
-      const result = await createActivity(formData);
-      if (!result.success) {
-        setError(result.error);
-      } else {
-        setShowAddForm(false);
-        router.refresh();
-      }
-    });
-  }
 
   async function handleUpdate(formData: FormData) {
     setError('');
@@ -364,7 +350,7 @@ function ActivityManager({
         </p>
       )}
 
-      {activities.length === 0 && !showAddForm ? (
+      {activities.length === 0 && !showChooser ? (
         <p className={styles.noActivities}>등록된 활동이 없습니다.</p>
       ) : (
         <ul className={styles.activityList}>
@@ -381,7 +367,7 @@ function ActivityManager({
             ) : (
               <li key={a.id} className={styles.activityItem}>
                 <span className={styles.typeBadge} data-type={a.type}>
-                  {a.type === 'quiz' ? '퀴즈' : '과제'}
+                  {activityTypeLabel(a.type)}
                 </span>
                 <Link href={`/activities/${a.id}`} className={styles.activityLink}>
                   {a.title}
@@ -418,7 +404,7 @@ function ActivityManager({
                     className={styles.activityEditBtn}
                     onClick={() => {
                       setEditingId(a.id);
-                      setShowAddForm(false);
+                      setShowChooser(false);
                     }}
                   >
                     편집
@@ -438,77 +424,22 @@ function ActivityManager({
         </ul>
       )}
 
-      {showAddForm ? (
-        <form action={handleCreate} className={styles.addActivityForm}>
-          <label className={styles.label} htmlFor={`act-type-${sectionId}`}>
-            활동 유형
-          </label>
-          <select
-            id={`act-type-${sectionId}`}
-            name="type"
-            className={styles.select}
-            required
-          >
-            <option value="quiz">퀴즈</option>
-            <option value="assignment">과제</option>
-          </select>
+      <button
+        type="button"
+        className={styles.addActivityBtn}
+        onClick={() => {
+          setShowChooser(true);
+          setEditingId(null);
+        }}
+      >
+        + 활동 추가
+      </button>
 
-          <label className={styles.label} htmlFor={`act-title-${sectionId}`}>
-            제목
-          </label>
-          <input
-            id={`act-title-${sectionId}`}
-            name="title"
-            className={styles.input}
-            required
-            autoComplete="off"
-            placeholder="예: 중간고사 퀴즈"
-          />
-
-          <label className={styles.label} htmlFor={`act-desc-${sectionId}`}>
-            설명 (선택)
-          </label>
-          <textarea
-            id={`act-desc-${sectionId}`}
-            name="description"
-            className={styles.textarea}
-            autoComplete="off"
-          />
-
-          <label className={styles.label} htmlFor={`act-due-${sectionId}`}>
-            마감일 (선택)
-          </label>
-          <input
-            id={`act-due-${sectionId}`}
-            name="due_date"
-            type="datetime-local"
-            className={styles.input}
-          />
-
-          <div className={styles.formActions}>
-            <button type="submit" className={styles.ctaButton} disabled={isPending}>
-              {isPending ? '추가 중...' : '활동 추가'}
-            </button>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={() => setShowAddForm(false)}
-            >
-              취소
-            </button>
-          </div>
-        </form>
-      ) : (
-        <button
-          type="button"
-          className={styles.addActivityBtn}
-          onClick={() => {
-            setShowAddForm(true);
-            setEditingId(null);
-          }}
-        >
-          + 활동 추가
-        </button>
+      {showChooser && (
+        <ActivityChooser
+          sectionId={sectionId}
+          onClose={() => setShowChooser(false)}
+        />
       )}
     </div>
   );

@@ -5,6 +5,8 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SectionManager } from './SectionManager';
 import { EnrollButton } from './EnrollButton';
+import { ViewToggle } from './ViewToggle';
+import { activityTypeLabel } from '@/lib/activity-types';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -147,9 +149,12 @@ export default async function CourseDetailPage({
 
   return (
     <main className={styles.content}>
-      <Link href="/courses" className={styles.backLink}>
-        &larr; 코스 목록
-      </Link>
+      <div className={styles.topRow}>
+        <Link href="/courses" className={styles.backLink}>
+          &larr; 코스 목록
+        </Link>
+        <ViewToggle courseId={courseId} current="default" />
+      </div>
 
       <header className={styles.courseHeader}>
         <div className={styles.headerTop}>
@@ -272,7 +277,7 @@ function ActivityList({
         return (
           <li key={a.id} className={styles.activityItem}>
             <span className={styles.typeBadge} data-type={a.type}>
-              {a.type === 'quiz' ? '퀴즈' : '과제'}
+              {activityTypeLabel(a.type)}
             </span>
             <Link href={`/activities/${a.id}`} className={styles.activityLink}>
               {a.title}

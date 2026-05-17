@@ -4,6 +4,14 @@ import { sql } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { QuestionManager } from './QuestionManager';
+import { PageEditor } from './PageEditor';
+import { UrlEditor } from './UrlEditor';
+import { FileEditor } from './FileEditor';
+import {
+  loadPageContent,
+  loadUrlContent,
+  loadFileContent,
+} from '@/lib/activity-content';
 import styles from './quiz-edit.module.css';
 
 interface Question {
@@ -15,7 +23,16 @@ interface Question {
   sort_order: number;
 }
 
-export default async function QuizEditPage({
+const EDITABLE_TYPES = new Set(['quiz', 'page', 'url', 'file']);
+
+const EDIT_HEADINGS: Record<string, string> = {
+  quiz: '문제 편집',
+  page: '페이지 본문 편집',
+  url: 'URL 편집',
+  file: '파일 편집',
+};
+
+export default async function ActivityEditPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -27,7 +44,6 @@ export default async function QuizEditPage({
   const session = (await getServerSession(authOptions))!;
   const { role, id: userId } = session.user;
 
-  // 활동 + 소유자 확인
   const { rows: actRows } = await sql`
     SELECT a.*, s.course_id, c.created_by, c.title AS course_title
     FROM activities a
@@ -42,16 +58,48 @@ export default async function QuizEditPage({
   if (role !== 'teacher' || activity.created_by !== Number(userId)) {
     redirect(`/activities/${activityId}`);
   }
-  if (activity.type !== 'quiz') {
+  if (!EDITABLE_TYPES.has(activity.type)) {
     redirect(`/activities/${activityId}`);
   }
 
-  // 문제 목록
-  const { rows: questions } = await sql`
-    SELECT * FROM quiz_questions
-    WHERE activity_id = ${activityId}
-    ORDER BY sort_order
-  `;
+  const heading = EDIT_HEADINGS[activity.type] ?? '활동 편집';
+
+  let body: React.ReactNode = null;
+  if (activity.type === 'quiz') {
+    const { rows: questions } = await sql`
+      SELECT * FROM quiz_questions
+      WHERE activity_id = ${activityId}
+      ORDER BY sort_order
+    `;
+    body = (
+      <QuestionManager
+        activityId={activityId}
+        initialQuestions={questions as Question[]}
+      />
+    );
+  } else if (activity.type === 'page') {
+    const { body: pageBody } = await loadPageContent(activityId);
+    body = <PageEditor activityId={activityId} initialBody={pageBody} />;
+  } else if (activity.type === 'url') {
+    const content = await loadUrlContent(activityId);
+    body = (
+      <UrlEditor
+        activityId={activityId}
+        initialUrl={content?.external_url ?? ''}
+        initialOpenInNewTab={content?.open_in_new_tab ?? true}
+      />
+    );
+  } else if (activity.type === 'file') {
+    const content = await loadFileContent(activityId);
+    body = (
+      <FileEditor
+        activityId={activityId}
+        initialName={content?.file_name ?? ''}
+        initialUrl={content?.file_url ?? ''}
+        initialSize={content?.file_size_bytes ?? null}
+      />
+    );
+  }
 
   return (
     <main className={styles.content}>
@@ -60,13 +108,10 @@ export default async function QuizEditPage({
       </Link>
 
       <div className={styles.header}>
-        <h1>문제 편집</h1>
+        <h1>{heading}</h1>
       </div>
 
-      <QuestionManager
-        activityId={activityId}
-        initialQuestions={questions as Question[]}
-      />
+      {body}
     </main>
   );
 }
