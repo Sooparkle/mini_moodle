@@ -4,10 +4,16 @@ import { sql } from '@/lib/db';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ViewToggle } from '../ViewToggle';
+import { RoleToggle } from '../RoleToggle';
 import { EnrollButton } from '../EnrollButton';
 import { ModelessSectionEditor } from './ModelessSectionEditor';
 import { ModelessReadOnly } from './ModelessReadOnly';
 import { StudentPreviewToggle } from './StudentPreviewToggle';
+import {
+  parseRoleOverride,
+  effectiveRole,
+  computeCanEdit,
+} from '@/lib/role-override';
 import courseStyles from '../course-detail.module.css';
 import styles from './modeless.module.css';
 
@@ -37,15 +43,17 @@ export default async function ModelessCoursePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ as?: string }>;
+  searchParams: Promise<{ as?: string; role?: string }>;
 }) {
   const { id } = await params;
-  const { as: viewAs } = await searchParams;
+  const { as: viewAs, role: roleParam } = await searchParams;
   const courseId = Number(id);
   if (isNaN(courseId)) notFound();
 
   const session = (await getServerSession(authOptions))!;
-  const { role, id: userId } = session.user;
+  const { role: sessionRole, id: userId } = session.user;
+  const roleOverride = parseRoleOverride(roleParam);
+  const role = effectiveRole(sessionRole, roleOverride);
   const isStudent = role === 'student';
 
   const [courseResult, sectionsResult, activitiesResult, enrollmentResult] =
@@ -94,9 +102,10 @@ export default async function ModelessCoursePage({
     activitiesBySection[a.section_id].push(a);
   }
 
-  const isTeacherOwner = role === 'teacher' && isOwner;
-  const previewAsStudent = isTeacherOwner && viewAs === 'student';
-  const editable = isTeacherOwner && !previewAsStudent;
+  const canEdit = computeCanEdit(sessionRole, role, isOwner);
+  const previewAsStudent = canEdit && viewAs === 'student';
+  const editable = canEdit && !previewAsStudent;
+  const isTeacherOwner = canEdit;
 
   // 학생(또는 학생 미리보기) 상태 배지
   let statusByActivity: Record<number, string> = {};
@@ -151,7 +160,10 @@ export default async function ModelessCoursePage({
         <Link href="/courses" className={courseStyles.backLink}>
           &larr; 코스 목록
         </Link>
-        <ViewToggle courseId={courseId} current="modeless" />
+        <div className={courseStyles.topRowActions}>
+          <RoleToggle sessionRole={sessionRole} current={role} />
+          <ViewToggle courseId={courseId} current="modeless" />
+        </div>
       </div>
 
       {previewAsStudent && (

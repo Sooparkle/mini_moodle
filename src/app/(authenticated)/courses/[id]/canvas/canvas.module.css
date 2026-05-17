@@ -24,6 +24,13 @@
   flex-wrap: wrap;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 .backLink {
   color: var(--gray-600);
   font-size: var(--text-sm);

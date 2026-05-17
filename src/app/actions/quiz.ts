@@ -13,18 +13,30 @@ type QuizResult =
 
 async function verifyQuizOwner(activityId: number) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'teacher') {
+  if (!session) {
+    return { ok: false as const, error: '퀴즈 관리 권한이 없습니다.' };
+  }
+  const role = session.user.role;
+  if (role !== 'teacher' && role !== 'admin') {
     return { ok: false as const, error: '퀴즈 관리 권한이 없습니다.' };
   }
 
   const userId = Number(session.user.id);
-  const { rows } = await sql`
-    SELECT a.id, a.type, s.course_id
-    FROM activities a
-    JOIN sections s ON s.id = a.section_id
-    JOIN courses c ON c.id = s.course_id
-    WHERE a.id = ${activityId} AND c.created_by = ${userId}
-  `;
+  const { rows } =
+    role === 'admin'
+      ? await sql`
+          SELECT a.id, a.type, s.course_id
+          FROM activities a
+          JOIN sections s ON s.id = a.section_id
+          WHERE a.id = ${activityId}
+        `
+      : await sql`
+          SELECT a.id, a.type, s.course_id
+          FROM activities a
+          JOIN sections s ON s.id = a.section_id
+          JOIN courses c ON c.id = s.course_id
+          WHERE a.id = ${activityId} AND c.created_by = ${userId}
+        `;
   if (rows.length === 0) {
     return { ok: false as const, error: '해당 퀴즈의 소유자만 관리할 수 있습니다.' };
   }
@@ -37,19 +49,30 @@ async function verifyQuizOwner(activityId: number) {
 
 async function verifyQuestionOwner(questionId: number) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'teacher') {
+  if (!session) {
+    return { ok: false as const, error: '퀴즈 관리 권한이 없습니다.' };
+  }
+  const role = session.user.role;
+  if (role !== 'teacher' && role !== 'admin') {
     return { ok: false as const, error: '퀴즈 관리 권한이 없습니다.' };
   }
 
   const userId = Number(session.user.id);
-  const { rows } = await sql`
-    SELECT qq.id, qq.activity_id
-    FROM quiz_questions qq
-    JOIN activities a ON a.id = qq.activity_id
-    JOIN sections s ON s.id = a.section_id
-    JOIN courses c ON c.id = s.course_id
-    WHERE qq.id = ${questionId} AND c.created_by = ${userId}
-  `;
+  const { rows } =
+    role === 'admin'
+      ? await sql`
+          SELECT qq.id, qq.activity_id
+          FROM quiz_questions qq
+          WHERE qq.id = ${questionId}
+        `
+      : await sql`
+          SELECT qq.id, qq.activity_id
+          FROM quiz_questions qq
+          JOIN activities a ON a.id = qq.activity_id
+          JOIN sections s ON s.id = a.section_id
+          JOIN courses c ON c.id = s.course_id
+          WHERE qq.id = ${questionId} AND c.created_by = ${userId}
+        `;
   if (rows.length === 0) {
     return { ok: false as const, error: '해당 문제의 소유자만 관리할 수 있습니다.' };
   }

@@ -6,7 +6,13 @@ import Link from 'next/link';
 import { SectionManager } from './SectionManager';
 import { EnrollButton } from './EnrollButton';
 import { ViewToggle } from './ViewToggle';
+import { RoleToggle } from './RoleToggle';
 import { activityTypeLabel } from '@/lib/activity-types';
+import {
+  parseRoleOverride,
+  effectiveRole,
+  computeCanEdit,
+} from '@/lib/role-override';
 import styles from './course-detail.module.css';
 
 interface Activity {
@@ -32,15 +38,20 @@ interface Section {
 
 export default async function CourseDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const courseId = Number(id);
   if (isNaN(courseId)) notFound();
 
   const session = (await getServerSession(authOptions))!;
-  const { role, id: userId } = session.user;
+  const { role: sessionRole, id: userId } = session.user;
+  const roleOverride = parseRoleOverride(sp.role);
+  const role = effectiveRole(sessionRole, roleOverride);
   const isStudent = role === 'student';
 
   const [courseResult, sectionsResult, activitiesResult, enrollmentResult] =
@@ -104,7 +115,7 @@ export default async function CourseDetailPage({
     activitiesBySection[a.section_id].push(a);
   }
 
-  const canEdit = role === 'teacher' && isOwner;
+  const canEdit = computeCanEdit(sessionRole, role, isOwner);
 
   // 학생용 상태 배지 데이터
   let statusByActivity: Record<number, string> = {};
@@ -153,7 +164,10 @@ export default async function CourseDetailPage({
         <Link href="/courses" className={styles.backLink}>
           &larr; 코스 목록
         </Link>
-        <ViewToggle courseId={courseId} current="default" />
+        <div className={styles.topRowActions}>
+          <RoleToggle sessionRole={sessionRole} current={role} />
+          <ViewToggle courseId={courseId} current="default" />
+        </div>
       </div>
 
       <header className={styles.courseHeader}>

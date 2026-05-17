@@ -65,20 +65,30 @@ export async function gradeAssignment(formData: FormData): Promise<AssignmentRes
   if (isNaN(rawGrade)) return { success: false, error: '점수를 입력해주세요.' };
 
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'teacher') {
+  if (!session) return { success: false, error: '채점 권한이 없습니다.' };
+  const role = session.user.role;
+  if (role !== 'teacher' && role !== 'admin') {
     return { success: false, error: '채점 권한이 없습니다.' };
   }
 
   const teacherId = Number(session.user.id);
 
-  // 코스 소유자 확인
-  const { rows: actRows } = await sql`
-    SELECT a.id, s.course_id
-    FROM activities a
-    JOIN sections s ON s.id = a.section_id
-    JOIN courses c ON c.id = s.course_id
-    WHERE a.id = ${activityId} AND c.created_by = ${teacherId}
-  `;
+  // 코스 소유자 확인 (admin은 우회)
+  const { rows: actRows } =
+    role === 'admin'
+      ? await sql`
+          SELECT a.id, s.course_id
+          FROM activities a
+          JOIN sections s ON s.id = a.section_id
+          WHERE a.id = ${activityId}
+        `
+      : await sql`
+          SELECT a.id, s.course_id
+          FROM activities a
+          JOIN sections s ON s.id = a.section_id
+          JOIN courses c ON c.id = s.course_id
+          WHERE a.id = ${activityId} AND c.created_by = ${teacherId}
+        `;
   if (actRows.length === 0) return { success: false, error: '해당 코스의 소유자만 채점할 수 있습니다.' };
 
   // grade_item 찾기

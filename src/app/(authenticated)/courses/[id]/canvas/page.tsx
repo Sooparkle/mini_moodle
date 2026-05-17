@@ -5,10 +5,16 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { EnrollButton } from '../EnrollButton';
 import { ViewToggle } from '../ViewToggle';
+import { RoleToggle } from '../RoleToggle';
 import { CourseIndex } from './CourseIndex';
 import { SectionCanvas } from './SectionCanvas';
 import { RightRail } from './RightRail';
 import { ActivityPeek } from './ActivityPeek';
+import {
+  parseRoleOverride,
+  effectiveRole,
+  computeCanEdit,
+} from '@/lib/role-override';
 import styles from './canvas.module.css';
 
 interface Activity {
@@ -45,15 +51,17 @@ export default async function CourseCanvasPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ peek?: string }>;
+  searchParams: Promise<{ peek?: string; role?: string }>;
 }) {
   const { id } = await params;
-  const { peek } = await searchParams;
+  const { peek, role: roleParam } = await searchParams;
   const courseId = Number(id);
   if (isNaN(courseId)) notFound();
 
   const session = (await getServerSession(authOptions))!;
-  const { role, id: userId } = session.user;
+  const { role: sessionRole, id: userId } = session.user;
+  const roleOverride = parseRoleOverride(roleParam);
+  const role = effectiveRole(sessionRole, roleOverride);
   const userIdNum = Number(userId);
   const isStudent = role === 'student';
 
@@ -115,7 +123,7 @@ export default async function CourseCanvasPage({
     (activitiesBySection[a.section_id] ??= []).push(a);
   }
 
-  const canEdit = role === 'teacher' && isOwner;
+  const canEdit = computeCanEdit(sessionRole, role, isOwner);
 
   let statusByActivity: Record<number, string> = {};
   let recentGrades: RecentGrade[] = [];
@@ -203,7 +211,10 @@ export default async function CourseCanvasPage({
           <Link href="/courses" className={styles.backLink}>
             ← 코스 목록
           </Link>
-          <ViewToggle courseId={courseId} current="canvas" />
+          <div className={styles.headerActions}>
+            <RoleToggle sessionRole={sessionRole} current={role} />
+            <ViewToggle courseId={courseId} current="canvas" />
+          </div>
         </div>
         <div className={styles.headerTitle}>
           <h1>{course.title}</h1>

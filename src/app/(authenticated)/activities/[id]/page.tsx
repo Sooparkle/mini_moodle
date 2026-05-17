@@ -42,7 +42,7 @@ export default async function ActivityDetailPage({
 
   const activity = actRows[0];
   const isOwner = activity.created_by === Number(userId);
-  const canEdit = role === 'teacher' && isOwner;
+  const canEdit = (role === 'teacher' && isOwner) || role === 'admin';
 
   // 학생: 수강등록 확인
   if (role === 'student') {

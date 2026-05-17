@@ -55,7 +55,10 @@ export default async function ActivityEditPage({
 
   const activity = actRows[0];
 
-  if (role !== 'teacher' || activity.created_by !== Number(userId)) {
+  const isAdmin = role === 'admin';
+  const isOwnerTeacher =
+    role === 'teacher' && activity.created_by === Number(userId);
+  if (!isOwnerTeacher && !isAdmin) {
     redirect(`/activities/${activityId}`);
   }
   if (!EDITABLE_TYPES.has(activity.type)) {

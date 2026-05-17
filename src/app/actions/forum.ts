@@ -31,12 +31,13 @@ async function verifyForumAccess(activityId: number) {
     return { ok: false as const, error: '포럼 활동이 아닙니다.' };
   }
 
+  const isAdmin = session.user.role === 'admin';
   const isOwner = row.created_by === userId;
-  if (!isOwner && !row.enrolled) {
+  if (!isOwner && !isAdmin && !row.enrolled) {
     return { ok: false as const, error: '수강 등록한 학생만 글을 작성할 수 있습니다.' };
   }
 
-  return { ok: true as const, userId, isOwner };
+  return { ok: true as const, userId, isOwner: isOwner || isAdmin };
 }
 
 export async function createForumTopic(formData: FormData): Promise<Result> {
@@ -111,7 +112,8 @@ export async function deleteForumPost(formData: FormData): Promise<Result> {
   if (rows.length === 0) return { success: false, error: '글을 찾을 수 없습니다.' };
 
   const { author_id, owner_id } = rows[0];
-  if (author_id !== userId && owner_id !== userId) {
+  const isAdmin = session.user.role === 'admin';
+  if (author_id !== userId && owner_id !== userId && !isAdmin) {
     return { success: false, error: '본인 글 또는 코스 소유자만 삭제할 수 있습니다.' };
   }
 

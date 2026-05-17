@@ -11,14 +11,20 @@ type SectionResult =
 
 async function verifyCourseOwner(courseId: number): Promise<{ ok: true; userId: number } | { ok: false; error: string }> {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'teacher') {
+  if (!session) {
+    return { ok: false, error: '섹션 관리 권한이 없습니다.' };
+  }
+  const role = session.user.role;
+  if (role !== 'teacher' && role !== 'admin') {
     return { ok: false, error: '섹션 관리 권한이 없습니다.' };
   }
 
   const userId = Number(session.user.id);
-  const { rows } = await sql`
-    SELECT id FROM courses WHERE id = ${courseId} AND created_by = ${userId}
-  `;
+  // admin이면 owner 체크 우회
+  const { rows } =
+    role === 'admin'
+      ? await sql`SELECT id FROM courses WHERE id = ${courseId}`
+      : await sql`SELECT id FROM courses WHERE id = ${courseId} AND created_by = ${userId}`;
   if (rows.length === 0) {
     return { ok: false, error: '해당 코스의 소유자만 섹션을 관리할 수 있습니다.' };
   }
