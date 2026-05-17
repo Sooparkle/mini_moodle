@@ -128,6 +128,70 @@ Moodle 4.2+ `core_xapi` 서브시스템은 statement 수신·저장만 담당하
 
 ---
 
+## Phase 10 — Activity Registration Expansion (2일)
+
+### 왜 이 Phase를 추가하는가
+P5에서 활동 모델을 `quiz`/`assignment` 2종만 구현한 결과 Moodle의 핵심 콘텐츠 전달 매커니즘(리소스 Page/URL/File, 협업 Forum)이 빠져 있다. P9 회고(`project_history/COURSE_UX_REPORT.md:149`)에서 "5.1 Add 버튼·purpose 그룹화 미적용"으로 명시된 갭이다. 강사가 "주차 학습 안내 페이지", "참고 자료 링크", "강의 PDF", "주차 토론"을 등록할 수 없는 상태로는 LMS 시연이 빈약하다. P9에서 만든 3 UX 변형(basic/canvas/modeless)의 차별점도 활동 추가 단계에서 모두 동일한 `<select>`로 평탄화되어 있어, 변형별 정체성을 활동 등록 흐름까지 확장한다.
+
+### 스코프
+
+| 산출물 | 위치 |
+|--------|------|
+| DB 마이그레이션 | `src/sql/migration-002-activity-types.sql` |
+| CHECK 제약 6종 | `activities.type IN ('quiz','assignment','page','url','file','forum')` |
+| 신규 테이블 4종 | `activity_pages`, `activity_urls`, `activity_files`, `forum_posts` (1-level reply) |
+| Activity Chooser 모달 | `ActivityChooser.tsx` — basic/canvas 공통, purpose 3탭 |
+| Modeless 인라인 확장 | `AddActivityForm` select 6종 + URL/File 조건부 필드 |
+| 활동 상세 분기 | PageView · UrlView · FileView · ForumView · ForumThread |
+| 활동 편집 분기 | PageEditor · UrlEditor · FileEditor (quiz는 기존 QuestionManager) |
+| 헬퍼 | `src/lib/activity-types.ts` (라벨/GRADED), `src/lib/activity-content.ts` (자식 로더) |
+
+### 핵심 설계 결정
+
+| # | 결정 | 이유 |
+|---|------|------|
+| 1 | grade_items은 quiz/assignment에만 자동 생성 | Page/URL/File/Forum은 평가 대상 아님 — 성적표 깨끗하게 유지 |
+| 2 | File은 URL 기반 (Vercel Blob 미사용) | P7 배포·token 발급 전에는 외부 URL이 단순 · Blob 전환은 후속 작업 |
+| 3 | Forum은 1-level reply (depth=2) | mini-moodle 규모. 깊은 스레드는 N+1 위험·복잡도 비대비 |
+| 4 | Forum 작성 권한: owner 또는 enrolled | 학생은 등록한 코스에서만 글 작성 |
+| 5 | basic/canvas는 모달 chooser, modeless는 인라인 select | 변형별 UX 철학 보존: modeless는 컨텍스트 전환 비용 0 |
+| 6 | `src/app/actions/page.ts` → `pages.ts` 리네임 | Next.js App Router의 `page.ts` 파일 컨벤션과 충돌 |
+| 7 | type별 자식 INSERT는 createActivity 트랜잭션 내부 | 부모-자식 정합 보장, 실패 시 활동 자체도 롤백 |
+
+### xAPI verb 매핑 (Phase 8 사전 기록)
+
+신규 4 타입의 Phase 8 statement emission 매핑:
+
+| 활동 타입 | xAPI verb | 발화 시점 |
+|-----------|-----------|-----------|
+| page | `http://adlnet.gov/expapi/verbs/experienced` | 페이지 view 시 |
+| url | `http://adlnet.gov/expapi/verbs/experienced` | 외부 이동 클릭 시 |
+| file | `http://activitystrea.ms/schema/1.0/download` | 다운로드 클릭 시 |
+| forum (topic) | `http://activitystrea.ms/schema/1.0/post` | createForumTopic 성공 시 |
+| forum (reply) | `http://activitystrea.ms/schema/1.0/reply` | createForumReply 성공 시 |
+
+(P8 B1 6 emission 지점이 6개 → 11개로 확장 가능. Gate 1 통과 후 추가 여부 결정)
+
+### 범위 외 (의도적 폐기)
+
+- Lesson, Workshop, Choice, Glossary, Wiki, SCORM, H5P, LTI, BBB 등 (포트폴리오 규모 초과)
+- Forum 깊이 > 2 (N+1·복잡도 비대비)
+- 드래그앤드롭 정렬 (P9에서 화살표 결정 유지)
+- Vercel Blob 업로드 (V2 후속)
+- File MIME 타입 검증 / 바이러스 스캔
+
+### 반대 논리 및 한계 (P10 전용)
+
+| 항목 | 내용 |
+|------|------|
+| File이 URL 기반이라 실제 업로드 UX 부재 | 실 LMS는 multipart upload + 스토리지. Blob 전환 시까지 강사는 외부 URL(GitHub/Drive) 수동 업로드 |
+| Forum이 1-level reply라 학술 토론 부적합 | Moodle도 nested 기본은 1-level이지만 옵션 존재. Phase 10 범위에선 미지원 |
+| Activity Chooser 모달의 카테고리 = 3개 고정 | Moodle 5.1은 6개(Recommended + Content + ...). 시각적 단순성 위해 축소 |
+| basic/canvas/modeless 3 변형 유지로 SectionManager 수정이 modeless에 영향 | type 배지·시그니처는 별도 헬퍼로 격리. 향후 통일하려면 P11 |
+| 분모 11d → 13d로 Overall % 소급 변경 | 작업량 감소 아니라 분모 증가. CHANGELOG에 명기 |
+
+---
+
 ## VS Code CLI 작업 시 권장 순서 (바로 실행용)
 
 ```bash

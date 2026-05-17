@@ -6,6 +6,22 @@ Format: Date | What Changed | Why | Timeline Impact
 
 ---
 
+### 2026-05-17 — Phase 10 추가: Activity Registration Expansion (Resources + Forum)
+- **What:** 활동 타입 4종 추가 (`page`/`url`/`file`/`forum`) — DB CHECK 6종 + 4 신규 테이블 + Activity Chooser 모달 + 변형별 등록 UX + 활동 상세/편집 6종 분기. Phase 10 신규 추가.
+- **Why:**
+  1. P5에서 quiz/assignment 2종으로만 활동 모델 구현 → Moodle 핵심 콘텐츠 전달 매커니즘(리소스+포럼) 부재 (`COURSE_UX_REPORT.md:149` 갭)
+  2. P9에서 만든 3 UX 변형(basic/canvas/modeless)의 차별점이 활동 추가 단계에서 동일 `<select>`로 평탄화 → 변형 정체성을 활동 등록 흐름까지 확장
+  3. P8(xAPI) 진입 전 emission 지점 확장 사전 정리 (page experienced, file download, forum post/reply verb 매핑)
+- **Timeline impact:** PROJECT_TRACKER 분모 11d → 13d (P10 weight 2d). Overall 85% → 88%. 과거 % 소급 변경 (분모 증가, 작업량 감소 아님)
+- **핵심 결정:**
+  - File은 URL 기반 (Vercel Blob 미사용) — P7 배포·token 전 단순화. V2 후속
+  - Forum 1-level reply (depth=2) — 복잡도 vs 가치 균형
+  - grade_items은 quiz/assignment에만 자동 생성 — 성적표 청결성
+  - basic/canvas는 모달 chooser, modeless는 인라인 select — 변형별 UX 철학 보존
+  - `src/app/actions/page.ts` → `pages.ts` 리네임 (Next.js App Router page 컨벤션 충돌)
+- **xAPI verb 사전 매핑:** page→experienced, url→experienced, file→download, forum-topic→post, forum-reply→reply
+- **범위 외:** Lesson/Workshop/Choice/Wiki/SCORM 등, Forum nested, dnd 정렬, Blob 업로드
+
 ### 2026-04-10 — Initial Plan Established
 - 7-phase plan based on Phase 1 analysis
 - Total estimated duration: 8 working days

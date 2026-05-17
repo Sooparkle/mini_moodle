@@ -1,7 +1,7 @@
 # MoodleLite Project Tracker
 
-> Last updated: 2026-04-17 Session 11
-> Overall progress: 83% (분모 8d→9.5d 확장: P8 추가로 소급 변경 — CHANGELOG 참조)
+> Last updated: 2026-05-17 Session 14
+> Overall progress: 88% (분모 13d, P10 추가)
 
 ## Phase Summary
 
@@ -15,11 +15,13 @@
 | 6 | Enrollment + Grades | DONE | 100% | 1d | 모든 태스크 완료 |
 | 7 | Polish + Deploy | IN_PROGRESS | 80% | 0.5d | 배포만 남음 |
 | 8 | xAPI Mini LRS + mini-RBAC | NOT_STARTED | 0% | 1.5d | B0–B5, P7 100% 후 IN_PROGRESS 전환 |
+| 9 | Course UX 비교 (Canvas + Mode-less) | DONE | 100% | 1.5d | A/B/회고 완료 |
+| 10 | Activity Registration Expansion (Resources + Forum) | DONE | 100% | 2d | Page/URL/File/Forum 4종 추가, Activity Chooser 모달 |
 
 ## Progress Formula
 
 - Phase progress = SUM(DONE task weights) + SUM(IN_PROGRESS task weights * 0.5)
-- Overall = (P1% * 0.5 + P2% * 1 + P3% * 1.5 + P4% * 1.5 + P5% * 2 + P6% * 1 + P7% * 0.5 + P8% * 1.5) / 9.5
+- Overall = (P1% * 0.5 + P2% * 1 + P3% * 1.5 + P4% * 1.5 + P5% * 2 + P6% * 1 + P7% * 0.5 + P8% * 1.5 + P9% * 1.5 + P10% * 2) / 13
 
 ---
 
@@ -122,7 +124,104 @@
 
 ---
 
+## Phase 9 — Course UX 비교 (Canvas + Mode-less) (IN_PROGRESS)
+
+> 배경: Moodle opensource 강좌 페이지의 5대 UX 약점(편집/뷰 모드 전환 비용, 활동 진입 후 복귀 비용, 정보 위계 불분명, 진척도 분산, 잠금 사유 불친절) 중 처음 두 개를 정면 공격하는 2개 변형을 구축해 비교 가능하게 만든다.
+> 라우팅: `/courses/[id]` (기본, 기존 유지) · `/courses/[id]/canvas` (A) · `/courses/[id]/modeless` (B, 추후) — 3-way 토글로 전환.
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 9a: A 변형 — Single-canvas 3-pane | DONE | 45% | CourseIndex(scrollspy) + SectionCanvas + RightRail(진척도/마감/성적, 교수 통계) + ActivityPeek(?peek=N slide-over) + ViewToggle. tsc clean. |
+| 9b: B 변형 — Mode-less 인라인 편집 | DONE | 45% | /modeless 라우트. InlineEditableText(hover-pen) + ModelessSectionEditor(hover-only 컨트롤) + 5초 Undo 토스트 + ?as=student 학생 미리보기 + ModelessReadOnly. tsc clean. |
+| 9c: 비교 회고 + FINAL_REPORT 부록 | DONE | 10% | FINAL_REPORT.md Appendix A 추가: 5대 약점 → 2 변형 매핑, 차별점/구현 비용/한계/다음 단계 7개 표. 측정 메트릭은 설계 의도 기반 추정 (실측은 사용자 테스트 후 채움). |
+
+**Phase 9 progress: 100%**
+
+---
+
+## Phase 10 — Activity Registration Expansion (Resources + Forum) (DONE)
+
+> 배경: 활동 타입이 `quiz`/`assignment` 2종만 존재해 Moodle 핵심 콘텐츠 전달 매커니즘(Page/URL/File/Forum) 부재. COURSE_UX_REPORT.md:149의 "5.1 Add 버튼·purpose 그룹화 미적용" 갭 정면 공격.
+
+| Task | Status | Weight | Notes |
+|------|--------|--------|-------|
+| 10a: DB 마이그레이션 + schema.sql 갱신 | DONE | 15% | migration-002-activity-types.sql · CHECK 6종 교체 · 4 신규 테이블 + 인덱스 |
+| 10b: 서버 액션 확장 + 신규 4파일 | DONE | 20% | activity.ts(type 화이트리스트 6 + grade_items 조건부 + 자식 INSERT) · pages.ts · url.ts · file.ts · forum.ts |
+| 10c: ActivityChooser 모달 컴포넌트 | DONE | 20% | basic/canvas 공통, purpose 3탭(Content/Communication/Assessment), 2단계 폼, ESC/backdrop 닫기 |
+| 10d: SectionManager 모달 연동 + 배지 6종 | DONE | 10% | 인라인 select 폼 → 모달 트리거 · activityTypeLabel 헬퍼 도입 |
+| 10e: Modeless 인라인 select 6종 + 조건부 필드 | DONE | 10% | hover-pen 철학 유지, URL/File 선택 시 추가 필드 인라인 노출 |
+| 10f: 활동 상세 분기 (Page/URL/File/Forum) | DONE | 20% | renderActivityBody 분기 · PageView/UrlView/FileView/ForumView/ForumThread · ForumComposer/ForumDeleteButton · edit/PageEditor/UrlEditor/FileEditor · activity-content.ts 헬퍼 |
+| 10g: 트래커/PLAN/CHANGELOG 갱신 | DONE | 5% | 분모 11d → 13d, Overall 재계산, Phase 10 entry |
+
+**Phase 10 progress: 100%**
+
+---
+
 ## Session Log
+
+### 2026-05-17 Session 14 — Phase 10 완료 (Activity Registration Expansion)
+- 신규 활동 타입 4종 추가: `page` / `url` / `file` / `forum` (총 6종)
+- DB 마이그레이션 `migration-002-activity-types.sql`:
+  - `activities_type_check` 제약 6종으로 교체
+  - `activity_pages` (PK activity_id, body) · `activity_urls` (external_url + open_in_new_tab) · `activity_files` (file_name + file_url + size) · `forum_posts` (parent_id NULL=topic) 4 테이블
+  - scripts/apply-migration.ts 신규 작성 (WebSocket Pool + multi-statement)
+- 서버 액션:
+  - `activity.ts`: type 화이트리스트 6종 + grade_items는 `quiz`/`assignment`만 자동 생성 + type별 자식 테이블 INSERT
+  - 신규: `pages.ts`(`page.ts`는 Next.js page 컨벤션 충돌로 리네임) / `url.ts` / `file.ts` / `forum.ts`(verifyForumAccess: owner 또는 enrolled)
+- Activity Chooser 모달 (`ActivityChooser.tsx`, `activity-chooser.module.css`):
+  - basic + canvas 변형 공통 사용
+  - purpose 3탭 (Content / Communication / Assessment) + 카드 그리드 → 2단계 type별 폼
+  - design 토큰 준수 (monochrome + accent 1색, focus trap, ESC/backdrop 닫기, scroll-lock)
+- Modeless 변형: `AddActivityForm` `<select>` 6 옵션 + URL/File 선택 시 조건부 필드 인라인 노출 (hover-pen 철학 유지)
+- 활동 상세 6종 분기 (`/activities/[id]/page.tsx` `renderActivityBody`):
+  - PageView (본문 + 강사 편집 링크) / UrlView (외부 이동 버튼) / FileView (다운로드) / ForumView+ForumThread (topic 목록 + 답글, `?topic=N` 라우팅)
+  - edit 페이지 6종 분기: PageEditor / UrlEditor / FileEditor 신규
+- 헬퍼: `src/lib/activity-types.ts` (라벨 매핑 + GRADED_TYPES) · `src/lib/activity-content.ts` (자식 테이블 로더)
+- 하드코딩 라벨 6곳 제거: 모두 `activityTypeLabel` 사용 (page.tsx 학생뷰, ActivityPeek, ModelessReadOnly, SectionCanvas, activities/[id]/page.tsx)
+- TypeScript clean · `npm run build` 성공
+- 분모 11d → 13d (P10 weight 2d), Overall 85% → 88%
+- **다음 진입점**: (1) `npm run dev`로 교수/학생 시나리오 동작 검증, (2) Phase 7 잔여 Vercel 배포 또는 Phase 8 진입
+
+
+
+### 2026-05-17 Session 13 — Phase 9 B변형 (Mode-less 인라인 편집) 빌드
+- 차별점 결정: 학생 보기 토글 + Hover-pen 인라인 편집 (사용자 선택, 위 둘 다)
+- 신규 디렉토리 `src/app/(authenticated)/courses/[id]/modeless/` 7개 파일:
+  - `page.tsx`: course/sections/activities 페치 + `?as=student` 파싱 + isTeacherOwner/previewAsStudent/editable 3분기. 학생/미리보기 시 statusByActivity 추가 페치
+  - `ModelessSectionEditor.tsx` (클라이언트, 480줄): 섹션·활동 카드 리스트, hover-only 위↑↓× 컨트롤, InlineEditableText 결합, pendingDeletes Map + 5초 setTimeout 삭제 패턴. 인라인 AddSectionForm / AddActivityForm
+  - `InlineEditableText.tsx`: variant heading/description, view↔edit↔saving 상태기계. Enter(heading)·Cmd+Enter(description)·blur 저장, Esc 취소. Pen SVG 아이콘 hover opacity 0→1
+  - `UndoToast.tsx`: 화면 하단 stack, 5초 카운트다운 progress bar(CSS animation), "되돌리기" 클릭 시 clearTimeout
+  - `ModelessReadOnly.tsx` (서버): is_visible 필터 렌더 단계에서. 학생·미리보기 공용
+  - `StudentPreviewToggle.tsx`: `?as=student` Link + eye SVG. 미리보기 ON 시 self-hide (배너가 대체)
+  - `modeless.module.css` (440줄): 디자인 토큰 준수(monochrome + --accent + danger), hover-pen / 토스트 / 다크 배너(`var(--gray-900)`) / 768px 반응형 + `@media (hover: none)` 터치 fallback
+- 기존 SectionManager 패턴 폐기: [편집] 버튼 클릭 → 카드 전체가 폼으로 교체 → 인라인 hover-pen 1-click 진입으로 컨텍스트 전환 비용 0
+- 5초 Undo 토스트: 페이지 이탈 시 setTimeout 미실행 → 의도적 "암묵 취소". DB 마이그레이션 없이 deletion soft-cancel
+- ViewToggle: disabled span → Link 활성화 (3-way 토글 완성)
+- 서버 액션은 기존 createSection/updateSection/deleteSection/reorderSection + activity 6개 그대로 재사용 (스코프 최소)
+- TypeScript 체크 clean (exit 0)
+- **9c 회고 (같은 세션 진행)**: `project_history/FINAL_REPORT.md` Appendix A 추가
+  - A.1 배경: Moodle 5.x 5대 UX 약점 식별 → P9는 (1)편집/뷰 전환 비용 + (2)활동 진입 후 복귀 비용 타깃
+  - A.2 라우팅 3-way 매핑 / A.3 변형별 설계 의도 / A.4 차별점 매트릭스 (클릭 수·컨텍스트 전환 횟수)
+  - A.5 구현 비용 표 / A.6 한계 / A.7 다음 단계 (사용자 테스트 / A+B 통합 / dnd 정렬)
+  - 측정값은 설계 의도 기반 추정치 — 실측은 사용자 테스트 후 갱신
+- Phase 9 진척: 45% → 100% (DONE), Overall: 78% → 85%
+- **다음 진입점**: (1) `npm run dev`로 `/courses/1/modeless` 동작 검증 (교수: prof@moodlelite.com, 학생: student1@moodlelite.com). (2) 9a+9b+9c 묶어서 단일 PR 머지 (`feat/p9-course-ux-variants` 브랜치 권장). (3) P7 잔여(Vercel 프로덕션 배포) 또는 P8(xAPI Mini LRS) 진입
+
+### 2026-05-16 Session 12 — Phase 9 A변형 (Single-canvas Course View) 빌드
+- Moodle 5.x 강좌 페이지 reference 분석 → mini-moodle의 갭 7개 식별 (Course index 부재, Activities overview 부재, Availability 부재 등) + Moodle opensource UX의 5대 약점 정리 (편집/뷰 모드 전환 비용, 활동 진입 후 복귀 비용 등)
+- 사용자 결정: 차별화 방향 A(Single-canvas) + B(Mode-less) 둘 다 구현해 비교, A부터. 라우팅 `/canvas` 신규 + 3-way 토글
+- Phase 9 신규 추가, 분모 9.5d → 11d 확장. Overall 83% → 78%로 소급 변경 (작업량 감소 아님, 분모 증가)
+- 빌드 내역:
+  - `src/app/(authenticated)/courses/[id]/canvas/page.tsx`: 코스 상세 데이터 페치 재사용 + 학생 최근 성적 3개 / 교수 미채점 수·등록자 수 추가 쿼리
+  - `canvas/CourseIndex.tsx`: IntersectionObserver 기반 scrollspy + 클릭-스크롤 + 활동 상태 dot 표시
+  - `canvas/SectionCanvas.tsx`: 교수 owner면 기존 SectionManager 그대로 wrap, 학생은 카드 그리드. ActivityCard 클릭 → `?peek=N` slide-over
+  - `canvas/RightRail.tsx`: 학생(진척도% + 다가오는 마감 3 + 최근 성적 3) / 교수(등록·미채점 통계) 분기
+  - `canvas/ActivityPeek.tsx`: 우측 slide-over (ESC/백드롭/X 닫기, body scroll-lock, router.replace로 ?peek 제거)
+  - `[id]/ViewToggle.tsx`: 기본/캔버스/Mode-less 3-way 토글 (Mode-less 비활성)
+  - 기존 `[id]/page.tsx`에 ViewToggle 끼움 (`.topRow` 추가)
+- 모바일 fallback: ≤1024px flex 컬럼 + `order`로 SectionCanvas → RightRail → CourseIndex 순서 재배치. ≤768px activityGrid 1열, peek 풀스크린
+- TypeScript 체크 clean
+- **다음 진입점**: (1) 사용자가 `npm run dev`로 `/courses/1/canvas` 진입해 시드 데이터로 동작 확인. (2) 9b Mode-less B변형 — 편집 토글을 "학생으로 보기"로 치환. (3) 9c 회고 작성
 
 ### 2026-04-17 Session 11 — Phase 8 계획 확정 (xAPI Mini LRS + mini-RBAC)
 - 입사(인튜브) 도메인 대비용 새 Phase 8 추가 결정 — 회사 독자 자산인 Tube LRS(ADL xAPI 1.0/2.0 인증, 디지털서비스몰 등재) 기반
