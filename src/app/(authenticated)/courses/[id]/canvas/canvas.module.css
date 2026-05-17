@@ -1,0 +1,732 @@
+/* ============================================
+   Canvas Course View — A 버전
+   ============================================ */
+
+.page {
+  padding: var(--space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---------- Course Header ---------- */
+
+.courseHeader {
+  margin-bottom: var(--space-6);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.backLink {
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+.shortName {
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.description {
+  margin-top: var(--space-3);
+  color: var(--gray-600);
+}
+
+.metaRow {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+}
+
+.enrollBanner {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+/* ---------- 3-pane Grid ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* ---------- CourseIndex (Left) ---------- */
+
+.indexAside {
+  position: sticky;
+  top: var(--space-4);
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+}
+
+.indexTitle {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.indexList {
+  list-style: none;
+}
+
+.indexSectionItem {
+  margin-bottom: var(--space-2);
+}
+
+.indexSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  background: none;
+  border: none;
+  padding: var(--space-2);
+  text-align: left;
+  color: var(--gray-900);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.indexSectionHeader:hover {
+  background: var(--gray-100);
+}
+
+.indexSectionHeader[data-active='true'] {
+  color: var(--accent);
+  background: var(--gray-100);
+}
+
+.indexChevron {
+  font-size: 0.625rem;
+  color: var(--gray-400);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.indexChevron[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+.indexWeekBadge {
+  font-size: 0.6875rem;
+  color: var(--gray-400);
+  margin-right: var(--space-1);
+  flex-shrink: 0;
+}
+
+.indexSectionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indexActivityLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indexActivityList {
+  list-style: none;
+  padding-left: var(--space-4);
+  margin-top: var(--space-1);
+}
+
+.indexActivityItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--gray-600);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.indexActivityItem:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
+.indexStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  flex-shrink: 0;
+}
+
+.indexStatusDot[data-status='graded'],
+.indexStatusDot[data-status='finished'] {
+  background: var(--gray-900);
+}
+
+.indexStatusDot[data-status='submitted'],
+.indexStatusDot[data-status='inprogress'] {
+  background: var(--gray-400);
+  outline: 2px solid var(--gray-200);
+}
+
+/* ---------- SectionCanvas (Center) ---------- */
+
+.canvasMain {
+  min-width: 0;
+}
+
+.sectionCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+  scroll-margin-top: var(--space-4);
+}
+
+.sectionCardHidden {
+  background: var(--gray-50);
+  border-style: dashed;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.sectionHeader h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.weekBadge {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+.hiddenBadge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  background: var(--gray-100);
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 400;
+}
+
+.sectionDesc {
+  color: var(--gray-600);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.activityGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.activityCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.activityCard:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+  color: inherit;
+  transform: translateY(-1px);
+}
+
+.activityCardHidden {
+  opacity: 0.6;
+}
+
+.activityCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.typeBadge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  background: var(--gray-200);
+  color: var(--gray-900);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.statusBadge[data-status='graded'],
+.statusBadge[data-status='finished'] {
+  background: var(--gray-900);
+  color: #fff;
+}
+
+.statusBadge[data-status='submitted'],
+.statusBadge[data-status='inprogress'] {
+  background: var(--gray-200);
+  color: var(--gray-900);
+}
+
+.activityTitle {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.activityMeta {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.noActivities {
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.emptyState {
+  background: #fff;
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-12);
+  text-align: center;
+  color: var(--gray-400);
+}
+
+/* ---------- RightRail (Right) ---------- */
+
+.rightRail {
+  position: sticky;
+  top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+}
+
+.railCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.railCardTitle {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.progressNumber {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  line-height: 1;
+}
+
+.progressMeta {
+  font-size: var(--text-sm);
+  color: var(--gray-400);
+  margin-top: var(--space-1);
+}
+
+.progressBar {
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-3);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--gray-900);
+  transition: width 0.3s;
+}
+
+.dueList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dueItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  color: inherit;
+}
+
+.dueItem:hover {
+  background: var(--gray-100);
+  text-decoration: none;
+  color: inherit;
+}
+
+.dueDate {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+}
+
+.dueDateUrgent {
+  color: var(--danger);
+}
+
+.gradeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+
+.gradeName {
+  color: var(--gray-600);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gradeValue {
+  color: var(--gray-900);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.railEmpty {
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.railLink {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.railStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.railStat + .railStat {
+  border-top: 1px solid var(--gray-200);
+}
+
+.railStatLabel {
+  color: var(--gray-600);
+}
+
+.railStatValue {
+  color: var(--gray-900);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- ActivityPeek (Slide-over) ---------- */
+
+.peekBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(23, 23, 23, 0.4);
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.peekPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  background: #fff;
+  border-left: 1px solid var(--gray-200);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.2s ease;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.06);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.peekHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.peekClose {
+  background: none;
+  border: none;
+  font-size: var(--text-lg);
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  line-height: 1;
+}
+
+.peekClose:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.peekBody {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.peekTitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.peekDesc {
+  color: var(--gray-600);
+  white-space: pre-wrap;
+  margin: var(--space-3) 0;
+}
+
+.peekMetaList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+  padding: var(--space-3);
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.peekMetaList li {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+}
+
+.peekMetaLabel {
+  color: var(--gray-400);
+}
+
+.peekMetaValue {
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.peekActions {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.peekPrimary {
+  flex: 1;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-weight: 500;
+  font-size: var(--text-base);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.peekPrimary:hover {
+  background: var(--accent-hover);
+  color: #fff;
+  text-decoration: none;
+}
+
+.peekSecondary {
+  flex: 1;
+  background: #fff;
+  color: var(--gray-900);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-weight: 500;
+  font-size: var(--text-base);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.peekSecondary:hover {
+  border-color: var(--gray-900);
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1280px) {
+  .grid {
+    grid-template-columns: 220px 1fr 260px;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .canvasMain {
+    order: 1;
+  }
+  .rightRail {
+    order: 2;
+    position: static;
+    max-height: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .rightRail .railCard {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+  .indexAside {
+    order: 3;
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-3);
+  }
+  .courseHeader {
+    margin-bottom: var(--space-4);
+  }
+  .enrollBanner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .metaRow {
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .sectionCard {
+    padding: var(--space-4);
+  }
+  .activityGrid {
+    grid-template-columns: 1fr;
+  }
+  .peekPanel {
+    width: 100vw;
+  }
+}

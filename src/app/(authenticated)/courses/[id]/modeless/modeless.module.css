@@ -1,0 +1,657 @@
+/* ============================================
+   Mode-less 변형 — 학생 미리보기 + 인라인 편집
+   ============================================ */
+
+/* ---------- Student preview banner ---------- */
+
+.previewBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--gray-900);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+.previewBanner span {
+  font-weight: 500;
+}
+
+.previewExit {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.previewExit:hover {
+  color: #fff;
+  opacity: 0.85;
+}
+
+/* ---------- Preview toggle button ---------- */
+
+.previewToggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.previewToggle:hover {
+  border-color: var(--gray-400);
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
+/* ---------- Section list (editor) ---------- */
+
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionCard {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  transition: border-color 0.15s;
+}
+
+.sectionCard:hover {
+  border-color: var(--gray-400);
+}
+
+.sectionCardHidden {
+  opacity: 0.6;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.weekBadge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.hiddenBadge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+/* ---------- Hover-only controls ---------- */
+
+.hoverActions {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.sectionCard:hover .hoverActions,
+.sectionCard:focus-within .hoverActions,
+.activityRow:hover .hoverActions,
+.activityRow:focus-within .hoverActions {
+  opacity: 1;
+}
+
+/* On touch devices: always visible (no hover) */
+@media (hover: none) {
+  .hoverActions {
+    opacity: 1;
+  }
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--gray-600);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.iconBtn:hover:not(:disabled) {
+  border-color: var(--gray-400);
+  color: var(--gray-900);
+}
+
+.iconBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.iconBtnDanger {
+  color: var(--danger);
+}
+
+.iconBtnDanger:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.iconBtnSmall {
+  width: 24px;
+  height: 24px;
+  font-size: 0.625rem;
+}
+
+/* ---------- Section description / activity area ---------- */
+
+.sectionDesc {
+  margin-top: var(--space-2);
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.sectionDescPlaceholder {
+  margin-top: var(--space-2);
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+.activityList {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-3) 0 0 0;
+  border-top: 1px solid var(--gray-200);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.activityRow + .activityRow {
+  border-top: 1px solid var(--gray-100);
+}
+
+.activityRowHidden {
+  opacity: 0.5;
+}
+
+.typeBadge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.activityTitleArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityLink {
+  color: var(--gray-900);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.activityLink:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.dueDate {
+  color: var(--gray-400);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: 0.625rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.statusBadge[data-status='not_attempted'] {
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+.statusBadge[data-status='inprogress'],
+.statusBadge[data-status='submitted'] {
+  background: #dbeafe;
+  color: var(--accent);
+}
+
+.statusBadge[data-status='finished'],
+.statusBadge[data-status='graded'] {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+/* ---------- Ghost add buttons ---------- */
+
+.addCard {
+  display: block;
+  width: 100%;
+  padding: var(--space-6);
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.addCard:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.addActivityBtn {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  margin-top: var(--space-3);
+  border: 1px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.addActivityBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- Inline add forms ---------- */
+
+.inlineForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+}
+
+.inlineFieldRow {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.inlineInput,
+.inlineSelect {
+  flex: 1;
+  min-width: 120px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-size: var(--text-sm);
+  font-family: inherit;
+  color: var(--gray-900);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.inlineInput:focus,
+.inlineSelect:focus {
+  border-color: var(--accent);
+}
+
+.inlineInputWeek {
+  flex: 0 0 80px;
+  min-width: 60px;
+}
+
+.inlineActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.inlinePrimary {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.inlinePrimary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.inlinePrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inlineSecondary {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.inlineSecondary:hover {
+  border-color: var(--gray-400);
+}
+
+/* ---------- Inline editable text ---------- */
+
+.editable {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: text;
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-1);
+  margin: -2px calc(var(--space-1) * -1);
+  transition: background 0.15s;
+}
+
+.editable:hover {
+  background: var(--gray-100);
+}
+
+.editable[data-disabled='true'] {
+  cursor: default;
+}
+
+.editable[data-disabled='true']:hover {
+  background: transparent;
+}
+
+.editableBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: text;
+  border-radius: var(--radius-sm);
+  padding: var(--space-1);
+  margin: calc(var(--space-1) * -1);
+  transition: background 0.15s;
+}
+
+.editableBlock:hover {
+  background: var(--gray-100);
+}
+
+.editableBlock[data-disabled='true'] {
+  cursor: default;
+}
+
+.editableBlock[data-disabled='true']:hover {
+  background: transparent;
+}
+
+.editableValue {
+  flex: 1;
+  min-width: 0;
+}
+
+.editableValueEmpty {
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+.penIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--gray-400);
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.editable:hover .penIcon,
+.editableBlock:hover .penIcon {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .penIcon {
+    opacity: 0.6;
+  }
+}
+
+.editable[data-disabled='true'] .penIcon,
+.editableBlock[data-disabled='true'] .penIcon {
+  display: none;
+}
+
+.editableInput {
+  flex: 1;
+  width: 100%;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+
+.editableTextarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font: inherit;
+  color: var(--gray-600);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.editableSaving {
+  font-size: 0.625rem;
+  color: var(--gray-400);
+  margin-left: var(--space-2);
+}
+
+.editableError {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 0.75rem;
+  color: var(--danger);
+}
+
+/* ---------- Undo toasts ---------- */
+
+.toastStack {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--gray-900);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  position: relative;
+  overflow: hidden;
+}
+
+.toastMessage {
+  flex: 1;
+}
+
+.toastUndo {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.toastUndo:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toastProgress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  background: #fff;
+  animation: toastShrink 5s linear forwards;
+}
+
+@keyframes toastShrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ---------- Error ---------- */
+
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------- Empty state ---------- */
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--gray-400);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+  .sectionCard {
+    padding: var(--space-4);
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hoverActions {
+    opacity: 1;
+    justify-content: flex-end;
+  }
+
+  .toast {
+    min-width: 0;
+    width: calc(100vw - var(--space-6) * 2);
+    max-width: 360px;
+  }
+
+  .previewBanner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

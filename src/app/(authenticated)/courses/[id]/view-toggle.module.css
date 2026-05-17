@@ -1,0 +1,46 @@
+.toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.toggleBtn {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--gray-600);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggleBtn:hover {
+  background: #fff;
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
+.toggleBtn[data-active='true'] {
+  background: #fff;
+  color: var(--gray-900);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.toggleBtn[data-active='true']:hover {
+  background: #fff;
+}
+
+.toggleBtn[data-disabled='true'] {
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.toggleBtn[data-disabled='true']:hover {
+  background: transparent;
+  color: var(--gray-400);
+}
